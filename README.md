@@ -8,16 +8,36 @@
 
 ---
 
-## TL;DR
+## TL;DR: key takeaways for reviewers
 
-| | |
-|---|---|
-| **What I built** | A multi-agent operating model for web marketing. A *decision* chat, an *executor* agent that only acts on written task cards, a dedicated *ads & analytics* agent on direct Google APIs, and a private Git repo as the single source of truth |
-| **Why it works** | Every change is a file: idea → backlog row → task card → committed report. Agents can't "remember" things wrongly because the facts live in a *site passport*, not in chat history |
-| **Throughput (12 days)** | 249 commits · 62 task cards · 54 committed execution reports · 2 sites |
-| **Ads audit, Client A** | 90 days: 849 clicks, **0 recorded conversions**. Root cause was measurement, not bidding. About 28% of spend went to the Display Network inside a Search campaign, and about 10% to irrelevant queries |
-| **Fixes applied** | Display off, geo set to presence-only, 51-term shared negative list. Each one validated (`validate_only`), applied, re-read and logged. Impact: `[TODO: CTR / CPC / wasted-spend share, 14 and 30 days after 2026-10-12]` |
-| **Connectors** | Direct, free API access (own Google Cloud OAuth client, Explorer API tier) instead of paid connector services or browser automation |
+Every claim below links to the evidence for it in this repo. Numbers come from the private working repo (git history, card and report files, ads audit and changelog). Where a number isn't known yet, it's marked `[TODO]` instead of estimated.
+
+1. **I design multi-agent systems, not just prompts.** I set up four roles with written boundaries: a decision agent (project chat), a proposal agent (design chat), an executor agent and a per-site ads & analytics agent, coordinated through task cards in Git. → [docs/architecture.md](docs/architecture.md), [templates/bot-rules.md](templates/bot-rules.md)
+2. **It runs in production on live client sites.** In the first 12 days (2026-10-01 to 2026-10-12) it produced 249 commits, 62 task cards and 54 committed execution reports across 2 client websites. → [docs/evidence.md](docs/evidence.md#1-activity-from-git-history)
+3. **I set up connectors directly and for free.** I built Google Ads API and GA4 Data/Admin API access on my own Google Cloud OAuth client (no billing, Explorer access tier), with secrets kept only on the agent machine. No paid connector service and no browser automation for routine work. → [docs/connectors.md](docs/connectors.md)
+4. **I bring analyst rigour to marketing.** The Google Ads audit found 849 clicks and 0 recorded conversions in 90 days, traced the cause to measurement rather than bidding, and quantified waste (≈28% of spend on Display inside Search, ≈10% on irrelevant queries). → [docs/measurement-case.md](docs/measurement-case.md)
+5. **Changes are governed and auditable.** Every ads write goes proposal → owner approval → `validate_only` → apply → re-read → changelog entry. A reviewed keyword-list mistake was caught and corrected the same minute. → [docs/evidence.md](docs/evidence.md#2-ads-changelog-excerpt), [docs/measurement-case.md](docs/measurement-case.md#what-was-changed-2026-10-12-all-approved-by-me)
+6. **Agents deliver working code from task cards, verified with evidence.** The executor shipped WordPress mu-plugins for tracking, a preview-copy guard and spam-URL blocking, each with before/after checks in its report. → [examples/wordpress-mu-plugins/](examples/wordpress-mu-plugins/), [docs/workflow.md](docs/workflow.md)
+7. **The pattern carries over to other domains.** The parts that make it work (source-of-truth files, task cards, role-scoped rules, approval gates, direct API connectors) are domain-neutral and come as templates. → [templates/](templates/)
+
+What this repo does **not** claim: final post-change performance numbers (still `[TODO]`, the changes are days old), and Meta Marketing API use in production (documented, not yet run).
+
+## Capabilities matrix
+
+| Capability | What I did | Evidence |
+|---|---|---|
+| Multi-agent architecture | 4 agent roles with an access matrix; one executor shared by all sites, ads agents per site | [architecture.md](docs/architecture.md#components) |
+| Agent workspaces & memory | Private Git repo as shared memory; site passport as the single source of truth; rules written to files in the same turn they're decided | [architecture.md](docs/architecture.md#repository-layout-per-site), [site-passport.md](templates/site-passport.md) |
+| Agent rules & guardrails | Profile texts with can / needs-approval / never sections; one card, one risk; stop conditions | [bot-rules.md](templates/bot-rules.md), [task-card.md](templates/task-card.md) |
+| Task orchestration | Backlog → card → report lifecycle with statuses; one-line dispatch | [workflow.md](docs/workflow.md) |
+| Connectors (direct, free) | Google Ads API + GA4 Data/Admin API via own OAuth desktop client; WordPress REST via application password; GitHub | [connectors.md](docs/connectors.md) |
+| Paid search (Google Ads) | Audit; Display off; geo set to presence only; 51-term shared negative list | [measurement-case.md](docs/measurement-case.md), [evidence.md](docs/evidence.md#2-ads-changelog-excerpt) |
+| Tracking & analytics | GA4 in a single gtag loader; Ads conversion and Meta `Lead` on the form-success event; preview-copy pitfall found by reading the plugin source | [measurement-case.md](docs/measurement-case.md#site-side-tracking-the-executor-delivered), [ads-conversion-tag.php](examples/wordpress-mu-plugins/ads-conversion-tag.php) |
+| Technical SEO / site audit | 196-URL audit of a medical clinic site, with a staged fix plan | [evidence.md](docs/evidence.md#3-site-audit-client-b) |
+| Web via code | mu-plugins, file mirror in Git, preview → production release path, one-file rollback | [examples/](examples/wordpress-mu-plugins/), [architecture.md](docs/architecture.md#release-path) |
+| Data analysis background | ~3.5 years as a data analyst (ETL, data quality, SQL, Tableau, A/B test analysis) | CV (separate document) |
+
+Machine-readable summary: [profile.yaml](profile.yaml) · Index for LLM readers: [llms.txt](llms.txt)
 
 ---
 
@@ -154,6 +174,9 @@ docs/architecture.md         roles, access matrix, boundaries
 docs/workflow.md             backlog → card → report lifecycle, anonymised sample card + report
 docs/connectors.md           direct API setup in general terms, pitfalls, no secrets
 docs/measurement-case.md     the ads & tracking audit, anonymised
+docs/evidence.md             activity numbers and how they were counted, changelog excerpt, site audit
+profile.yaml                 machine-readable summary: role fit, skills, evidence paths
+llms.txt                     index of key files for LLM readers
 templates/                   agent rules, task card, report, site passport, backlog
 examples/wordpress-mu-plugins/  generic, client-free code the executor shipped
 ```

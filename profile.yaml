@@ -1,0 +1,51 @@
+# Machine-readable summary of this portfolio. Every claim points to an evidence file in this repo.
+name: Roman Timoshenko
+github: romantimesnew
+location: Prague region, Czech Republic
+headline: AI-native operator with analyst rigour who runs web marketing through AI agents
+target_role: AI-Native Growth Marketer (B2B, Prague hybrid)
+
+summary: >
+  Former data analyst (~3.5 years: ETL, data quality, SQL, Tableau, A/B test analysis) who designed and
+  runs a multi-agent system that administers and markets two live client websites. Agents decide, execute
+  and run paid search under written rules, task cards and approval gates, with a private Git repo as the
+  source of truth.
+
+claims:
+  - id: multi_agent_architecture
+    claim: Designed a four-role agent system (project chat decides, design chat proposes, executor builds from task cards, per-site ads & analytics agent) with an access matrix.
+    evidence: [docs/architecture.md, templates/bot-rules.md]
+  - id: production_use
+    claim: "In production on 2 live client websites: 249 commits, 62 task cards, 54 committed reports in 12 days (2026-10-01 to 2026-10-12)."
+    evidence: [docs/evidence.md]
+  - id: direct_free_connectors
+    claim: Set up Google Ads API and GA4 Data/Admin API access directly via own Google Cloud OAuth desktop client (no billing, Explorer tier), no paid connector service; secrets only on the agent machine.
+    evidence: [docs/connectors.md]
+  - id: paid_search_audit
+    claim: "Google Ads audit: 849 clicks, 0 recorded conversions in 90 days; root cause in measurement; ~28% of spend on Display inside Search, ~10% on irrelevant queries."
+    evidence: [docs/measurement-case.md, docs/evidence.md]
+  - id: governed_changes
+    claim: Applied Display off, presence-only geo and a 51-term shared negative list via validate_only, apply, re-read and changelog.
+    evidence: [docs/evidence.md, docs/measurement-case.md]
+  - id: tracking_implementation
+    claim: Agents delivered GA4 + Ads conversion on the form-success event and a host-guarded preview-only Meta Pixel; found by reading plugin source that suppressed mail still fires conversion events.
+    evidence: [docs/measurement-case.md, examples/wordpress-mu-plugins/]
+  - id: transferable_pattern
+    claim: The operating model (source-of-truth files, task cards, role-scoped rules, approval gates) is domain-neutral and published as templates.
+    evidence: [templates/]
+
+skills:
+  ai_agents: [multi-agent design, agent rules and guardrails, task-card orchestration, agent workspaces with Git as memory, direct API connectors]
+  marketing: [Google Ads (search, negatives, geo, conversion setup), GA4, Meta Pixel, Google Search Console, technical SEO audits]
+  web: [WordPress, mu-plugins (PHP delivered by agents), preview-to-production release, Git/GitHub]
+  data: [SQL (PostgreSQL, BigQuery, ClickHouse, MySQL), Python (Pandas, NumPy), Tableau, ETL and data quality, A/B test analysis]
+
+not_claimed:
+  - Post-change performance results (pending; marked TODO)
+  - Meta Marketing API used in production (documented only)
+  - B2B / HubSpot / LinkedIn / Bing campaign experience in this repo
+
+open_todos:
+  - "CTR, CPC and wasted-spend share before vs after 2026-10-12 changes"
+  - "Conversions recorded after the lead-tracking fix ships"
+  - "Client B search metrics before vs after fixes"

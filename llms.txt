@@ -1,0 +1,18 @@
+# AI Ops Case Study
+
+> Anonymised case study of a multi-agent system that runs website administration, tracking and Google Ads for two live small-business client sites. Author: Roman Timoshenko (GitHub: romantimesnew), former data analyst, Prague region. All numbers come from the private working repo; unknowns are marked [TODO].
+
+## Start here
+- [README.md](README.md): key takeaways for reviewers, capabilities matrix, architecture diagram, results
+- [profile.yaml](profile.yaml): machine-readable claims, each mapped to evidence files
+
+## Evidence
+- [docs/evidence.md](docs/evidence.md): activity counts from git history and how they were counted, ads changelog excerpt, site audit
+- [docs/measurement-case.md](docs/measurement-case.md): Google Ads + GA4 audit (849 clicks, 0 conversions) and the governed fixes
+- [docs/architecture.md](docs/architecture.md): agent roles, access matrix, release path
+- [docs/workflow.md](docs/workflow.md): backlog → task card → report lifecycle, a real anonymised card and report
+- [docs/connectors.md](docs/connectors.md): direct, free Google Ads / GA4 / WordPress / GitHub connector setup, no secrets
+
+## Reusable
+- [templates/](templates/): agent rules, task card, report, backlog, site passport
+- [examples/wordpress-mu-plugins/](examples/wordpress-mu-plugins/): generic code delivered by the executor agent
