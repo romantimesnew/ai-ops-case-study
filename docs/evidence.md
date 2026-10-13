@@ -32,7 +32,7 @@ Commits per day:
 
 Why cards and reports differ: some cards were superseded by a follow-up card before they ran, and some were still in progress at the cut-off. Finished cards are never rewritten; a follow-up change always gets a new card.
 
-## 2. Ads changelog excerpt
+## 2. Ads change log excerpt
 
 Anonymised copy of the real `07-ads/changelog.md` entry. Campaign and object IDs are removed. Times are Europe/Prague.
 

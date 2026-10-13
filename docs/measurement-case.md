@@ -42,7 +42,7 @@ Verification by re-read: Display off on all three, PRESENCE on all three, list a
 6. GA4: `generate_lead` and `phone_click` as key events; exclude internal traffic.
 7. Remove two old paused campaigns after review.
 
-## Site-side tracking the executor delivered
+## What the executor delivered for tracking
 
 - **GA4 in the existing tag block.** One added line, no second loader, verified in production HTML.
 - **Ads conversion event** on the form plugin's client-side *mail sent* event. It fires only on a successful submit, not on validation errors or spam.
