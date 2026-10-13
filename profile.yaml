@@ -21,31 +21,47 @@ claims:
   - id: direct_free_connectors
     claim: Set up Google Ads API and GA4 Data/Admin API access directly via own Google Cloud OAuth desktop client (no billing, Explorer tier), no paid connector service; secrets only on the agent machine.
     evidence: [docs/connectors.md]
-  - id: paid_search_audit
-    claim: "Google Ads audit: 849 clicks, 0 recorded conversions in 90 days; root cause in measurement; ~28% of spend on Display inside Search, ~10% on irrelevant queries."
+  - id: paid_search_hands_on
+    claim: "Personally ran the client's Google Ads account from 04/2023 to 10/2026: ~172k account-currency lifetime spend, 53,114 clicks, 1.02M impressions, CTR 5.20%, avg CPC 3.24. It ran without working conversion tracking (0 primary conversions), which he later diagnosed himself."
     evidence: [docs/measurement-case.md, docs/evidence.md]
+  - id: paid_search_audit
+    claim: "API audit traced the 0 conversions to measurement (7 primary actions, 3 of them page views; GA4 0 key events, 51% of sessions from paid search). Waste: Display took 27.5% of spend and 88% of impressions in the 14 days before the fix (lifetime Display CTR 1.36% vs Search 6.08% in that campaign); ~10% of 90-day spend on irrelevant queries."
+    evidence: [docs/measurement-case.md, docs/evidence.md]
+  - id: baseline_before_after
+    claim: "Baseline for evaluation: 14 days before the 2026-10-12 changes, CTR 1.47%, CPC 21.63, 194 clicks. After-data not yet available."
+    evidence: [docs/measurement-case.md]
   - id: governed_changes
     claim: Applied Display off, presence-only geo and a 51-term shared negative list via validate_only, apply, re-read and changelog.
     evidence: [docs/evidence.md, docs/measurement-case.md]
   - id: tracking_implementation
-    claim: Agents delivered GA4 + Ads conversion on the form-success event and a host-guarded preview-only Meta Pixel; found by reading plugin source that suppressed mail still fires conversion events.
+    claim: Agents shipped GA4 in a single tag loader and a host-guarded preview-only Meta Pixel with Lead; lead-tracking fix (primary form/tel/messenger conversions, GA4 generate_lead) prepared, pending deploy; found by reading plugin source that suppressed mail still fires conversion events.
     evidence: [docs/measurement-case.md, examples/wordpress-mu-plugins/]
+  - id: origin
+    claim: Moved from manual ads and site edits to agents after a client site's hosting was hacked and the site was lost; rebuilt it from old backups with AI, then moved all work to agents. This explains the strict security, site passports and backup-before-change rules.
+    evidence: [README.md]
   - id: transferable_pattern
     claim: The operating model (source-of-truth files, task cards, role-scoped rules, approval gates) is domain-neutral and published as templates.
     evidence: [templates/]
+
+tooling:
+  main_system: Grok Bot with multiple role-based bots (project chats, executor, per-site ads & analytics bot, personal assistant)
+  trialled_and_compared: [Conductor, Claude Code, Codex, Gemini]  # chosen per task; not claimed as sustained production use
+  everyday: [git, GitHub, Python, Docker, Warp, Zed]
 
 skills:
   ai_agents: [multi-agent design, agent rules and guardrails, task-card orchestration, agent workspaces with Git as memory, direct API connectors]
   marketing: [Google Ads (search, negatives, geo, conversion setup), GA4, Meta Pixel, Google Search Console, technical SEO audits]
   web: [WordPress, mu-plugins (PHP delivered by agents), preview-to-production release, Git/GitHub]
-  data: [SQL (PostgreSQL, BigQuery, ClickHouse, MySQL), Python (Pandas, NumPy), Tableau, ETL and data quality, A/B test analysis]
+  data: [product analytics set up from scratch per game, SQL (PostgreSQL, BigQuery, ClickHouse, MySQL), Python (Pandas, NumPy), Tableau, ETL and data quality, forecasting support, A/B test analysis]
 
 not_claimed:
-  - Post-change performance results (pending; marked TODO)
+  - Post-change performance results (no full days after 2026-10-12 yet; marked TODO)
+  - Recorded lead conversions (tracking fix pending deploy)
+  - Sustained production use of trialled tools (Conductor, Claude Code, Codex, Gemini)
   - Meta Marketing API used in production (documented only)
   - B2B / HubSpot / LinkedIn / Bing campaign experience in this repo
 
 open_todos:
-  - "CTR, CPC and wasted-spend share before vs after 2026-10-12 changes"
+  - "CTR, CPC, Display and irrelevant-query share 14 and 30 days after 2026-10-12 (baseline known)"
   - "Conversions recorded after the lead-tracking fix ships"
   - "Client B search metrics before vs after fixes"

@@ -44,7 +44,24 @@ Anonymised copy of the real `07-ads/changelog.md` entry. Campaign and object IDs
 >
 > Verification: Display off on all three, PRESENCE on all three, list attached to all three.
 
-Source figures for the shares quoted in the README (90 days to 2026-10-11, account currency): total spend 13,688; Display Network inside Search 3,869 (≈28%); irrelevant queries ≈1,316 (≈10%); 849 clicks; 0 conversions.
+Source figures for the 90-day shares (to 2026-10-11, account currency): total spend 13,688; Display Network inside Search 3,869 (≈28%); irrelevant queries ≈1,316 (≈10%); 849 clicks; 0 conversions.
+
+The API's change history independently shows the 2026-10-12 geo and network updates with source `GOOGLE_ADS_API`. It shows no event for the third campaign's geo change or for the shared list, probably a limitation of the change-history feed. A re-read on 2026-10-13 confirmed all three campaigns are on PRESENCE with Display off, and the shared list is enabled on 3 campaigns with 51 members.
+
+## 2b. Read-only account export (2026-10-13)
+
+Exported via Google Ads API and GA4 Data API. Nothing was changed.
+
+| Scope | Spend (account currency) | Clicks | Impressions | CTR | Avg CPC | Primary conv. |
+|---|---|---|---|---|---|---|
+| Lifetime, 2023-04-12 to 2026-10-12 | ≈172k | 53,114 | 1,021,269 | 5.20% | 3.24 | 0 |
+| 14 days before the fix, 2026-09-28 to 10-11 | ≈4.2k | 194 | 13,195 | 1.47% | 21.63 | 0 |
+| of which Display (same 14 days) | 27.5% of spend | 99 (51%) | 11,664 (88%) | — | — | 0 |
+| Fixed campaign lifetime, Search vs Display | 63% / 36% of spend | — | — | 6.08% / 1.36% | — | 0 |
+
+Conversion actions: 7 enabled primary actions (3 page-view types, ad calls, contact, two lead-form submit types), plus hidden GA4-imported actions. Lifetime "all conversions": 1 (a form submit, October 2026). Primary conversions: 0.
+
+GA4 (data from 2026-10-01 to 10-12): 284 sessions, 243 users, 0 key events; google / cpc 146 sessions (51%), direct 76, organic 31, Instagram ≈19 across sources. Events: page_view 342, scroll 73, click 13, form_start 2; `generate_lead` absent.
 
 ## 3. Site audit, Client B
 
