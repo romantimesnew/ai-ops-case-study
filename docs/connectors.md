@@ -30,7 +30,7 @@ Steps were checked against Meta's docs in Oct 2026: app via the *Create & manage
 
 ## WordPress
 
-- A **dedicated user for the executor** with the lowest role that works, plus an **application password**. Never the owner's own account. It started as editor. On one site it was raised to administrator (2026-10-15) because theme and menu work needs that role; the guardrails (cards, approval gates, no deletes) stayed the same. Deleting things, plugins and security settings each need a separate card.
+- A **dedicated user for the executor** with the lowest role that works, plus an **application password**. Never the owner's own account. Guardrails (cards, approval gates, no deletes) apply regardless of the role. Deleting things, plugins and security settings each need a separate card.
 - **REST first.** Inventory (plugins, users, theme, pages) is read via the REST API with the application password. Clicks in wp-admin only with a stated reason and approval.
 - **When the file channel fails.** On one host FTP/FTPS proved unreliable, so a small REST plugin was written for child-theme file read/write: admin-only, realpath-guarded, with an extension allowlist. Every write is preceded by a backup, a hash check and `php -l`, and followed by a re-read. See [theme-file-rest.php](../examples/wordpress-mu-plugins/theme-file-rest.php).
 - **File mirror.** Custom code (mu-plugins) and the custom stylesheet are mirrored into `08-files/` of the repo, so the decision chat reads the real current code before writing a card. Core, plugins, themes, images, the database and config files are never mirrored.
