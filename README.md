@@ -225,6 +225,10 @@ How-to without secrets: [docs/connectors.md](docs/connectors.md)
 - **Everyday tools:** git/GitHub, Python (API scripts in venvs), Docker, Warp (terminal), Zed (editor).
 - **Selection rule:** use the cheapest tool that reliably reaches the goal (API over browser, file over click), and keep the repo, not the tool, as the system of record, so tools can be swapped without losing memory.
 
+## Other projects
+
+- **[Tesla Fleet: self-hosted data and voice-control server for my own car](projects/tesla-fleet/)** (2026-10-17). Built in one day with an AI agent on Tesla's official Fleet API, signed-command proxy and Fleet Telemetry: the car pushes data over mTLS through Kafka into TimescaleDB, with no API polling, and Siri, Shortcuts and Apple Watch commands go through a small Python service with a bearer token and an 8 m geofence for the trunk, frunk and charge port. Includes a wake-up log, the security setup, who did what, and the sanitised code.
+
 ## Repo map
 
 ```
@@ -238,6 +242,7 @@ profile.yaml                 machine-readable summary: role fit, skills, evidenc
 llms.txt                     index of key files for LLM readers
 templates/                   agent rules, task card, report, site passport, backlog
 examples/wordpress-mu-plugins/  generic, client-free code the executor shipped
+projects/tesla-fleet/         side project: self-hosted Tesla telemetry + voice control, sanitised code
 ```
 
 *Anonymisation: client names, domains, account and tag IDs, hosts, contacts and security settings are removed or replaced with placeholders such as `{ADS_TAG_ID}`.*

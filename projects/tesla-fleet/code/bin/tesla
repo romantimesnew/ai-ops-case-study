@@ -1,0 +1,200 @@
+#!/usr/bin/env python3
+"""tesla - small Fleet API client that talks to the local tesla-http-proxy.
+
+All requests go through https://127.0.0.1:4443 (vehicle-command proxy), which
+signs vehicle commands with the app key and forwards everything else to the
+EU Fleet API. Output is JSON on stdout. Token values are never printed.
+
+Usage:
+  tesla data [--no-wake] [endpoints]   vehicle_data (wakes the car if asleep unless --no-wake)
+  tesla status                         GET /api/1/vehicles/{vin} (state online/asleep, no wake)
+  tesla list                           GET /api/1/vehicles
+  tesla wake [--no-wait]               wake_up and wait until online (max ~90 s)
+  tesla cmd <command> [json]           POST /api/1/vehicles/{vin}/command/<command>
+                                       e.g. tesla cmd set_charge_limit '{"percent":80}'
+  tesla fleet-status                   POST /api/1/vehicles/fleet_status (key pairing, fw)
+  tesla telemetry-config               GET fleet_telemetry_config
+  tesla telemetry-errors               GET fleet_telemetry_errors
+  tesla get <path>                     raw GET  (path like /api/1/vehicles/{vin}/...; {vin} is substituted)
+  tesla post <path> [json]             raw POST
+  tesla delete <path>                  raw DELETE
+Env: TESLA_VIN (default <VIN>), TESLA_PROXY (default https://127.0.0.1:4443)
+Note: Fleet API is pay-as-you-go. Every call costs; avoid polling loops.
+"""
+import json, os, ssl, subprocess, sys, time, urllib.error, urllib.request
+
+PROXY = os.environ.get("TESLA_PROXY", "https://127.0.0.1:4443")
+CA = os.environ.get("TESLA_PROXY_CA", "/opt/tesla/proxy/tls-cert.pem")
+TOKENS = os.environ.get("TESLA_TOKENS", "/opt/tesla/data/tokens.json")
+REFRESH = os.environ.get("TESLA_REFRESH_CMD", "/opt/tesla/bin/refresh_token")
+VIN = os.environ.get("TESLA_VIN", "<VIN>")
+DEFAULT_ENDPOINTS = "charge_state;climate_state;drive_state;location_data;vehicle_state;vehicle_config;gui_settings"
+
+
+def die(msg, code=1):
+    print(json.dumps({"error": msg}), file=sys.stderr)
+    sys.exit(code)
+
+
+def token():
+    def load():
+        with open(TOKENS) as f:
+            return json.load(f)
+    try:
+        t = load()
+    except Exception as e:
+        die(f"cannot read tokens file: {e}")
+    if float(t.get("expires_at", 0)) - time.time() < 600:
+        subprocess.run([REFRESH, "--if-needed"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        t = load()
+    return t["access_token"]
+
+
+_ctx = ssl.create_default_context(cafile=CA)
+
+
+API_LOG = os.environ.get("API_LOG", "/opt/tesla/data/api_calls.log")
+
+
+def log_call(method, path, status, dur_ms):
+    """Record our own API call (no tokens) in api_calls (DB) + JSONL fallback file."""
+    ep = path.replace(VIN, "{vin}")
+    parts = ep.split("?")[0].strip("/").split("/")
+    cmd = parts[-1] if parts else ""
+    # fleet_telemetry_config POST makes the car (re)connect to the telemetry server
+    may_wake = "/command/" in ep or cmd == "wake_up" or (method == "POST" and cmd == "fleet_telemetry_config")
+    src = os.environ.get("TESLA_CALLER") or os.path.basename(sys.argv[0])
+    rec = {"ts": time.strftime("%Y-%m-%dT%H:%M:%S%z"), "vin": VIN, "method": method, "endpoint": ep,
+           "command": cmd, "http_status": status, "duration_ms": dur_ms, "may_wake": may_wake, "source": src}
+    try:
+        with open(API_LOG, "a") as f:
+            f.write(json.dumps(rec) + "\n")
+    except Exception:
+        pass
+    sql = ("INSERT INTO api_calls (vin, method, endpoint, command, http_status, duration_ms, may_wake, source) "
+           "VALUES (:'vin', :'method', :'endpoint', :'command', :'st'::int, :'dur'::int, :'mw'::boolean, :'src');")
+    args = ["docker", "exec", "-i", os.environ.get("TESLA_DB_CONTAINER", "tesla-db-1"), "psql", "-q", "-U", "tesla",
+            "-d", "tesla", "-v", "ON_ERROR_STOP=1", "-v", "vin=" + VIN, "-v", "method=" + method, "-v", "endpoint=" + ep,
+            "-v", "command=" + cmd, "-v", f"st={status}", "-v", f"dur={dur_ms}", "-v", f"mw={str(may_wake).lower()}",
+            "-v", "src=" + src]
+    try:
+        subprocess.run(args, input=sql.encode(), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=15)
+    except Exception:
+        pass
+
+
+def call(method, path, body=None, timeout=60):
+    path = path.replace("{vin}", VIN)
+    t0 = time.time()
+    try:
+        return _call(method, path, body, timeout)
+    finally:
+        log_call(method, path, _last_status[0], int((time.time() - t0) * 1000))
+
+
+_last_status = [0]
+
+
+def _call(method, path, body=None, timeout=60):
+    data = None
+    headers = {"Authorization": "Bearer " + token(), "Accept": "application/json"}
+    if body is not None:
+        data = json.dumps(body).encode()
+        headers["Content-Type"] = "application/json"
+    req = urllib.request.Request(PROXY + path, data=data, method=method, headers=headers)
+    try:
+        with urllib.request.urlopen(req, context=_ctx, timeout=timeout) as r:
+            status, raw = r.status, r.read()
+    except urllib.error.HTTPError as e:
+        status, raw = e.code, e.read()
+    except Exception as e:
+        die(f"request failed: {e}")
+    _last_status[0] = status
+    try:
+        out = json.loads(raw) if raw else {}
+    except ValueError:
+        out = {"raw": raw.decode(errors="replace")}
+    return status, out
+
+
+def emit(status, out):
+    if isinstance(out, dict) and status >= 400:
+        out = {"http_status": status, **out}
+    print(json.dumps(out, indent=2, ensure_ascii=False))
+    sys.exit(0 if status < 400 else 2)
+
+
+def state():
+    s, o = call("GET", "/api/1/vehicles/{vin}")
+    return (o.get("response") or {}).get("state") if s == 200 else None
+
+
+def wake(wait=True, max_wait=90):
+    s, o = call("POST", "/api/1/vehicles/{vin}/wake_up")
+    if s >= 400 or not wait:
+        return s, o
+    st = (o.get("response") or {}).get("state")
+    t0 = time.time()
+    delay = 5
+    while st != "online" and time.time() - t0 < max_wait:
+        time.sleep(delay)
+        delay = min(delay + 5, 15)  # back off to keep billable calls low
+        st = state()
+    return (200 if st == "online" else 408), {"response": {"state": st, "waited_s": round(time.time() - t0)}}
+
+
+def parse_json(arg):
+    try:
+        return json.loads(arg)
+    except ValueError as e:
+        die(f"invalid JSON argument: {e}")
+
+
+def main(a):
+    if not a or a[0] in ("-h", "--help", "help"):
+        print(__doc__)
+        return
+    c, rest = a[0], a[1:]
+    if c == "data":
+        nowake = "--no-wake" in rest
+        rest = [x for x in rest if x != "--no-wake"]
+        ep = rest[0] if rest else DEFAULT_ENDPOINTS
+        path = "/api/1/vehicles/{vin}/vehicle_data?endpoints=" + urllib.request.quote(ep, safe="")
+        s, o = call("GET", path)
+        if s == 408 and not nowake:
+            ws, wo = wake()
+            if ws != 200:
+                emit(ws, {"error": "vehicle did not wake", **wo})
+            s, o = call("GET", path)
+        emit(s, o)
+    elif c == "status":
+        emit(*call("GET", "/api/1/vehicles/{vin}"))
+    elif c == "list":
+        emit(*call("GET", "/api/1/vehicles"))
+    elif c == "wake":
+        emit(*wake(wait="--no-wait" not in rest))
+    elif c == "cmd":
+        if not rest:
+            die("usage: tesla cmd <command> [json]")
+        body = parse_json(rest[1]) if len(rest) > 1 else {}
+        emit(*call("POST", f"/api/1/vehicles/{{vin}}/command/{rest[0]}", body, timeout=90))
+    elif c == "fleet-status":
+        emit(*call("POST", "/api/1/vehicles/fleet_status", {"vins": [VIN]}))
+    elif c == "telemetry-config":
+        emit(*call("GET", "/api/1/vehicles/{vin}/fleet_telemetry_config"))
+    elif c == "telemetry-errors":
+        emit(*call("GET", "/api/1/vehicles/{vin}/fleet_telemetry_errors"))
+    elif c in ("get", "delete"):
+        if not rest:
+            die(f"usage: tesla {c} <path>")
+        emit(*call(c.upper(), rest[0]))
+    elif c == "post":
+        if not rest:
+            die("usage: tesla post <path> [json]")
+        emit(*call("POST", rest[0], parse_json(rest[1]) if len(rest) > 1 else {}, timeout=90))
+    else:
+        die(f"unknown command {c}; see tesla --help")
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

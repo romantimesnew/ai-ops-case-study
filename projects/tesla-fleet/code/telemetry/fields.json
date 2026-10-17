@@ -1,0 +1,388 @@
+{
+  "ACChargingEnergyIn": {
+    "interval_seconds": 30,
+    "minimum_delta": 0.1
+  },
+  "ACChargingPower": {
+    "interval_seconds": 5,
+    "minimum_delta": 0.1
+  },
+  "BMSState": {
+    "interval_seconds": 10
+  },
+  "BatteryHeaterOn": {
+    "interval_seconds": 10
+  },
+  "BatteryLevel": {
+    "interval_seconds": 30,
+    "minimum_delta": 0.1
+  },
+  "BmsFullchargecomplete": {
+    "interval_seconds": 10
+  },
+  "BrakePedal": {
+    "interval_seconds": 10
+  },
+  "BrickSocMinPercent": {
+    "interval_seconds": 60,
+    "minimum_delta": 0.5
+  },
+  "BrickVoltageMax": {
+    "interval_seconds": 30,
+    "minimum_delta": 0.005
+  },
+  "BrickVoltageMin": {
+    "interval_seconds": 30,
+    "minimum_delta": 0.005
+  },
+  "CabinOverheatProtectionMode": {
+    "interval_seconds": 5
+  },
+  "CenterDisplay": {
+    "interval_seconds": 1
+  },
+  "ChargeAmps": {
+    "interval_seconds": 10,
+    "minimum_delta": 0.5
+  },
+  "ChargeCurrentRequest": {
+    "interval_seconds": 10
+  },
+  "ChargeCurrentRequestMax": {
+    "interval_seconds": 60
+  },
+  "ChargeEnableRequest": {
+    "interval_seconds": 10
+  },
+  "ChargeLimitSoc": {
+    "interval_seconds": 1
+  },
+  "ChargePortDoorOpen": {
+    "interval_seconds": 1
+  },
+  "ChargePortLatch": {
+    "interval_seconds": 1
+  },
+  "ChargeRateMilePerHour": {
+    "interval_seconds": 30,
+    "minimum_delta": 1
+  },
+  "ChargeState": {
+    "interval_seconds": 1
+  },
+  "ChargerPhases": {
+    "interval_seconds": 10
+  },
+  "ChargerVoltage": {
+    "interval_seconds": 30,
+    "minimum_delta": 2
+  },
+  "ChargingCableType": {
+    "interval_seconds": 1
+  },
+  "ClimateKeeperMode": {
+    "interval_seconds": 5
+  },
+  "CruiseSetSpeed": {
+    "interval_seconds": 30
+  },
+  "DCChargingEnergyIn": {
+    "interval_seconds": 30,
+    "minimum_delta": 0.1
+  },
+  "DCChargingPower": {
+    "interval_seconds": 5,
+    "minimum_delta": 0.1
+  },
+  "DCDCEnable": {
+    "interval_seconds": 10
+  },
+  "DefrostForPreconditioning": {
+    "interval_seconds": 5
+  },
+  "DefrostMode": {
+    "interval_seconds": 5
+  },
+  "DestinationName": {
+    "interval_seconds": 10
+  },
+  "DetailedChargeState": {
+    "interval_seconds": 1
+  },
+  "DiStatorTempF": {
+    "interval_seconds": 60,
+    "minimum_delta": 1
+  },
+  "DiStatorTempR": {
+    "interval_seconds": 60,
+    "minimum_delta": 1
+  },
+  "DiTorqueActualF": {
+    "interval_seconds": 5,
+    "minimum_delta": 10
+  },
+  "DiTorqueActualR": {
+    "interval_seconds": 5,
+    "minimum_delta": 10
+  },
+  "DoorState": {
+    "interval_seconds": 1
+  },
+  "DriveRail": {
+    "interval_seconds": 10
+  },
+  "DriverSeatBelt": {
+    "interval_seconds": 1
+  },
+  "DriverSeatOccupied": {
+    "interval_seconds": 1
+  },
+  "EnergyRemaining": {
+    "interval_seconds": 30,
+    "minimum_delta": 0.1
+  },
+  "EstBatteryRange": {
+    "interval_seconds": 30,
+    "minimum_delta": 0.1
+  },
+  "EstimatedHoursToChargeTermination": {
+    "interval_seconds": 60,
+    "minimum_delta": 0.05
+  },
+  "ExpectedEnergyPercentAtTripArrival": {
+    "interval_seconds": 60,
+    "minimum_delta": 0.5
+  },
+  "FastChargerPresent": {
+    "interval_seconds": 1
+  },
+  "FastChargerType": {
+    "interval_seconds": 1
+  },
+  "FdWindow": {
+    "interval_seconds": 1
+  },
+  "FpWindow": {
+    "interval_seconds": 1
+  },
+  "Gear": {
+    "interval_seconds": 1
+  },
+  "GpsHeading": {
+    "interval_seconds": 5,
+    "minimum_delta": 5
+  },
+  "GpsState": {
+    "interval_seconds": 60
+  },
+  "GuestModeEnabled": {
+    "interval_seconds": 5
+  },
+  "GuestModeMobileAccessState": {
+    "interval_seconds": 5
+  },
+  "HomelinkNearby": {
+    "interval_seconds": 5
+  },
+  "HvacACEnabled": {
+    "interval_seconds": 5
+  },
+  "HvacAutoMode": {
+    "interval_seconds": 5
+  },
+  "HvacFanSpeed": {
+    "interval_seconds": 30
+  },
+  "HvacLeftTemperatureRequest": {
+    "interval_seconds": 30
+  },
+  "HvacPower": {
+    "interval_seconds": 5
+  },
+  "HvacRightTemperatureRequest": {
+    "interval_seconds": 30
+  },
+  "IdealBatteryRange": {
+    "interval_seconds": 60,
+    "minimum_delta": 0.1
+  },
+  "InsideTemp": {
+    "interval_seconds": 60,
+    "minimum_delta": 0.5
+  },
+  "IsolationResistance": {
+    "interval_seconds": 600,
+    "minimum_delta": 100
+  },
+  "LifetimeEnergyChargedKwh": {
+    "interval_seconds": 60,
+    "minimum_delta": 0.1
+  },
+  "LifetimeEnergyUsed": {
+    "interval_seconds": 60,
+    "minimum_delta": 0.1
+  },
+  "LocatedAtHome": {
+    "interval_seconds": 5
+  },
+  "LocatedAtWork": {
+    "interval_seconds": 5
+  },
+  "Location": {
+    "interval_seconds": 3,
+    "minimum_delta": 5
+  },
+  "Locked": {
+    "interval_seconds": 1
+  },
+  "MediaPlaybackStatus": {
+    "interval_seconds": 5
+  },
+  "MilesSinceReset": {
+    "interval_seconds": 600,
+    "minimum_delta": 1
+  },
+  "MilesToArrival": {
+    "interval_seconds": 30,
+    "minimum_delta": 0.5
+  },
+  "MinutesToArrival": {
+    "interval_seconds": 30,
+    "minimum_delta": 0.5
+  },
+  "ModuleTempMax": {
+    "interval_seconds": 30,
+    "minimum_delta": 0.5
+  },
+  "ModuleTempMin": {
+    "interval_seconds": 30,
+    "minimum_delta": 0.5
+  },
+  "NominalFullPackEnergyKwh": {
+    "interval_seconds": 600,
+    "minimum_delta": 0.1
+  },
+  "Odometer": {
+    "interval_seconds": 30,
+    "minimum_delta": 0.1
+  },
+  "OutsideTemp": {
+    "interval_seconds": 60,
+    "minimum_delta": 0.5
+  },
+  "PackCurrent": {
+    "interval_seconds": 2,
+    "minimum_delta": 1
+  },
+  "PackVoltage": {
+    "interval_seconds": 5,
+    "minimum_delta": 1
+  },
+  "PairedPhoneKeyAndKeyFobQty": {
+    "interval_seconds": 5
+  },
+  "PedalPosition": {
+    "interval_seconds": 5,
+    "minimum_delta": 5
+  },
+  "PreconditioningEnabled": {
+    "interval_seconds": 10
+  },
+  "RatedRange": {
+    "interval_seconds": 30,
+    "minimum_delta": 0.1
+  },
+  "RdWindow": {
+    "interval_seconds": 1
+  },
+  "RemoteStartActive": {
+    "interval_seconds": 5
+  },
+  "RpWindow": {
+    "interval_seconds": 1
+  },
+  "ScheduledChargingMode": {
+    "interval_seconds": 10
+  },
+  "ScheduledChargingPending": {
+    "interval_seconds": 10
+  },
+  "ScheduledChargingStartTime": {
+    "interval_seconds": 10
+  },
+  "SeatHeaterLeft": {
+    "interval_seconds": 30
+  },
+  "SeatHeaterRight": {
+    "interval_seconds": 30
+  },
+  "SelfDrivingMilesSinceReset": {
+    "interval_seconds": 600,
+    "minimum_delta": 1
+  },
+  "SentryMode": {
+    "interval_seconds": 1
+  },
+  "ServiceMode": {
+    "interval_seconds": 5
+  },
+  "Soc": {
+    "interval_seconds": 30,
+    "minimum_delta": 0.1
+  },
+  "SoftwareUpdateAvailable": {
+    "interval_seconds": 10
+  },
+  "SoftwareUpdateDownloadPercentComplete": {
+    "interval_seconds": 30,
+    "minimum_delta": 1
+  },
+  "SoftwareUpdateExpectedDurationMinutes": {
+    "interval_seconds": 10
+  },
+  "SoftwareUpdateInProgress": {
+    "interval_seconds": 10
+  },
+  "SoftwareUpdateInstallationPercentComplete": {
+    "interval_seconds": 30,
+    "minimum_delta": 1
+  },
+  "SoftwareUpdateScheduledStartTime": {
+    "interval_seconds": 10
+  },
+  "SoftwareUpdateVersion": {
+    "interval_seconds": 10
+  },
+  "TimeToFullCharge": {
+    "interval_seconds": 60,
+    "minimum_delta": 0.05
+  },
+  "TpmsPressureFl": {
+    "interval_seconds": 60,
+    "minimum_delta": 0.02
+  },
+  "TpmsPressureFr": {
+    "interval_seconds": 60,
+    "minimum_delta": 0.02
+  },
+  "TpmsPressureRl": {
+    "interval_seconds": 60,
+    "minimum_delta": 0.02
+  },
+  "TpmsPressureRr": {
+    "interval_seconds": 60,
+    "minimum_delta": 0.02
+  },
+  "ValetModeEnabled": {
+    "interval_seconds": 5
+  },
+  "VehicleName": {
+    "interval_seconds": 600
+  },
+  "VehicleSpeed": {
+    "interval_seconds": 2
+  },
+  "Version": {
+    "interval_seconds": 600
+  }
+}

@@ -51,6 +51,9 @@ claims:
   - id: origin
     claim: Moved from manual ads and site edits to agents after a client site's hosting was hacked and the site was lost; rebuilt it from old backups with AI, then moved all work to agents. This explains the strict security, site passports and backup-before-change rules.
     evidence: [README.md]
+  - id: side_project_tesla_fleet
+    claim: "Side project, built in one day (2026-10-17) with an AI agent: self-hosted data collection and voice-control server for my own Tesla Model 3 on a small cloud VPS, using the official Fleet API (own partner app, OAuth auto-refresh), the vehicle-command proxy (signed commands) and Fleet Telemetry (car pushes over mTLS). Caddy with SNI passthrough on port 443, Kafka, Python consumer, TimescaleDB with views and a wake-up log; Siri/Shortcuts/Apple Watch commands with a bearer token and an 8 m geofence for trunk, frunk and charge port. No API polling by design. The agent never sent real commands; all real-car tests were done by the owner. No DB backups yet."
+    evidence: [projects/tesla-fleet/README.md, projects/tesla-fleet/code/]
   - id: transferable_pattern
     claim: The operating model (source-of-truth files, task cards, role-scoped rules, approval gates) is domain-neutral and published as templates.
     evidence: [templates/]

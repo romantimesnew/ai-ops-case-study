@@ -1,0 +1,10 @@
+#!/bin/sh
+# Refresh Tesla tokens in /opt/tesla/data/tokens.json (rotating refresh token).
+# Usage: refresh_token            -> force refresh
+#        refresh_token --if-needed -> only if access token expires within 2h
+#        refresh_token status     -> show token metadata (no values)
+set -e
+TESLA_HOME="${TESLA_HOME:-/opt/tesla}"
+export SECRETS_FILE="${SECRETS_FILE:-$TESLA_HOME/secrets.env}" TOKENS_FILE="${TOKENS_FILE:-$TESLA_HOME/data/tokens.json}"
+if [ "$1" = "status" ]; then exec python3 "$TESLA_HOME/auth/app.py" status; fi
+exec python3 "$TESLA_HOME/auth/app.py" refresh "$@"

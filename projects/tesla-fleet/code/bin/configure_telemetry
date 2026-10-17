@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+"""Push the Fleet Telemetry config to the vehicle via the local vehicle-command
+proxy (which signs it with the app key -> fleet_telemetry_config_jws).
+
+Usage: configure_telemetry [--dry-run]
+Files: /opt/tesla/telemetry/fields.json   field -> {interval_seconds, minimum_delta?, resend_interval_seconds?}
+       /opt/tesla/telemetry/ca-chain.pem  CA bundle (LE intermediates + ISRG roots) for the vehicle
+Afterwards check:  tesla telemetry-config   (synced: true)   and   tesla telemetry-errors
+"""
+import json, os, subprocess, sys, time
+VIN = os.environ.get("TESLA_VIN", "<VIN>")
+D = os.environ.get("TELEMETRY_DIR", "/opt/tesla/telemetry")
+fields = json.load(open(f"{D}/fields.json"))
+ca = open(f"{D}/ca-chain.pem").read()
+cfg = {
+    "hostname": os.environ.get("TELEMETRY_HOSTNAME", "telemetry.example.com"),
+    "port": 443,
+    "ca": ca,
+    "exp": int(time.time()) + 360 * 24 * 3600,   # Tesla max is <364 days; re-run before it expires
+    "delivery_policy": "latest",                 # resend un-acked data (server uses reliable acks via Kafka)
+    "alert_types": ["service"],
+    "fields": fields,
+}
+body = {"vins": [VIN], "config": cfg}
+if "--dry-run" in sys.argv:
+    print(json.dumps({**body, "config": {**cfg, "ca": f"<{ca.count('BEGIN CERTIFICATE')} certs>"}}, indent=1))
+    sys.exit(0)
+env = dict(os.environ, TESLA_CALLER="configure_telemetry")
+r = subprocess.run([os.environ.get("TESLA_CLI", "/opt/tesla/bin/tesla"), "post", "/api/1/vehicles/fleet_telemetry_config", json.dumps(body)], env=env)
+sys.exit(r.returncode)

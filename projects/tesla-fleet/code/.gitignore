@@ -1,0 +1,17 @@
+secrets.env
+secrets.env.*
+!secrets.env.example
+db.env
+consumer.env
+.env
+.env.*
+data/
+keys/
+proxy/*.pem
+telemetry/certs/
+telemetry/ca-chain.pem
+telemetry/ca/
+*.pem
+*.key
+*.crt
+*.bak-*

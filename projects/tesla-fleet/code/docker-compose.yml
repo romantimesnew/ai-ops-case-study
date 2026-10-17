@@ -1,0 +1,155 @@
+# ${TESLA_VIN}, ${KAFKA_CLUSTER_ID} and ${LOCAL_TZ} are read by Compose from an untracked .env
+# file next to this one (see secrets.env.example). They are never hard-coded here.
+services:
+  caddy:
+    build: ./caddy
+    image: tesla-caddy-l4:latest
+    restart: unless-stopped
+    ports: ["80:80", "443:443", "443:443/udp"]
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./site:/srv/site:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [auth, shortcut]
+
+  auth:
+    build: ./auth
+    image: tesla-auth:latest
+    restart: unless-stopped
+    ports: ["127.0.0.1:8081:8000"]
+    environment:
+      SECRETS_FILE: /run/tesla/secrets.env
+      TOKENS_FILE: /data/tokens.json
+      TESLA_AUDIENCE: https://fleet-api.prd.eu.vn.cloud.tesla.com
+      TESLA_REDIRECT_URI: https://example.com/auth/callback
+      TESLA_LOCALE: ru-RU
+    volumes:
+      - ./secrets.env:/run/tesla/secrets.env:ro
+      - ./data:/data
+
+  # iOS Shortcuts / Siri car command endpoint (https://example.com/car/<action>)
+  shortcut:
+    build: ./shortcut
+    image: tesla-shortcut:latest
+    restart: unless-stopped
+    ports: ["127.0.0.1:8082:8000"]
+    env_file: ./consumer.env          # DATABASE_URL (api_calls logging, v_latest)
+    environment:
+      SECRETS_FILE: /run/tesla/secrets.env   # SHORTCUT_TOKEN + client id for token refresh
+      TOKENS_FILE: /data/tokens.json
+      TESLA_AUDIENCE: https://fleet-api.prd.eu.vn.cloud.tesla.com
+      TESLA_PROXY: https://proxy:4443
+      TESLA_VIN: ${TESLA_VIN}
+      LOCAL_TZ: ${LOCAL_TZ:-UTC}        # time zone for spoken times
+      SHORTCUT_LANG: en                 # en (default) or ru: language of spoken messages
+      # proximity check: these actions need the phone within PROXIMITY_MAX_M of the car
+      PROXIMITY_ACTIONS: trunk_open,frunk_open,charge_port_open
+      PROXIMITY_MAX_M: "8"
+      PROXIMITY_MAX_ACCURACY_M: "50"      # phone accuracy worse than this -> refused
+      PROXIMITY_REQUIRE_ACCURACY: "0"     # 1 = refuse when the phone sends no accuracy
+      PROXIMITY_FRESH_S: "120"            # telemetry Location younger than this is trusted
+      PROXIMITY_TELEMETRY_WAIT_S: "4"     # after wake: wait for telemetry snapshot before vehicle_data
+    volumes:
+      - ./secrets.env:/run/tesla/secrets.env:ro
+      - ./data:/data
+      - ./auth/app.py:/auth/app.py:ro
+      - ./proxy/tls-cert.pem:/proxy/tls-cert.pem:ro
+    depends_on: [proxy, db]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    read_only: true
+    tmpfs: [/tmp]
+    mem_limit: 128m
+
+  # vehicle-command HTTP proxy: signs commands + telemetry config with the app key
+  proxy:
+    image: tesla/vehicle-command:0.4.1
+    restart: unless-stopped
+    user: "0:0"            # needs to read root-owned 0600 key; all capabilities dropped
+    command: ["-tls-key", "/config/tls-key.pem", "-cert", "/config/tls-cert.pem",
+              "-key-file", "/keys/private-key.pem", "-host", "0.0.0.0", "-port", "4443",
+              "-timeout", "30s"]
+    ports: ["127.0.0.1:4443:4443"]
+    volumes:
+      - ./proxy:/config:ro
+      - ./keys/private-key.pem:/keys/private-key.pem:ro
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    read_only: true
+    mem_limit: 128m
+
+  # Fleet Telemetry server; reached via caddy layer4 SNI passthrough on :443
+  telemetry:
+    image: tesla/fleet-telemetry:v0.9.5
+    restart: unless-stopped
+    command: ["/fleet-telemetry", "-config", "/etc/fleet-telemetry/config.json"]
+    environment:
+      SUPPRESS_TLS_HANDSHAKE_ERROR_LOGGING: "true"
+    volumes:
+      - ./telemetry/config.json:/etc/fleet-telemetry/config.json:ro
+      - ./telemetry/certs:/certs:ro
+    depends_on: [kafka]
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    read_only: true
+    mem_limit: 256m
+
+  kafka:
+    image: apache/kafka:4.1.0
+    restart: unless-stopped
+    environment:
+      CLUSTER_ID: "${KAFKA_CLUSTER_ID}"
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_SHARE_COORDINATOR_STATE_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_SHARE_COORDINATOR_STATE_TOPIC_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_NUM_PARTITIONS: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      KAFKA_HEAP_OPTS: "-Xmx256m -Xms256m"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    mem_limit: 640m
+
+  db:
+    image: timescale/timescaledb:latest-pg17
+    restart: unless-stopped
+    env_file: ./db.env
+    environment:
+      TS_TUNE_MEMORY: 1GB
+      TS_TUNE_NUM_CPUS: "2"
+    ports: ["127.0.0.1:5432:5432"]
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    shm_size: 256m
+    mem_limit: 1200m
+
+  consumer:
+    build: ./consumer
+    image: tesla-consumer:latest
+    restart: unless-stopped
+    env_file: ./consumer.env
+    environment:
+      KAFKA_BOOTSTRAP: kafka:9092
+      NAMESPACE: tesla
+      ALLOWED_VINS: ${TESLA_VIN}
+    depends_on: [kafka, db]
+    mem_limit: 128m
+
+volumes:
+  caddy_data:
+  caddy_config:
+  kafka_data:
+  db_data:

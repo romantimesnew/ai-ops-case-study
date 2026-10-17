@@ -1,0 +1,57 @@
+{
+	# Layer4 listener wrapper on the HTTPS server (:443):
+	# TLS connections with SNI telemetry.example.com are passed through
+	# untouched (raw TCP) to fleet-telemetry, which terminates mTLS itself.
+	# Everything else falls through to Caddy's normal TLS/HTTP handling.
+	servers :443 {
+		listener_wrappers {
+			layer4 {
+				@telemetry tls sni telemetry.example.com
+				route @telemetry {
+					proxy telemetry:8443
+				}
+			}
+			tls
+		}
+	}
+}
+
+example.com, www.example.com {
+	@wwwauth {
+		host www.example.com
+		path /auth/*
+	}
+	redir @wwwauth https://example.com{uri} 302
+
+	handle /auth/* {
+		reverse_proxy auth:8000
+	}
+	# iOS Shortcuts car commands (bearer token checked by the shortcut service)
+	handle /car/* {
+		request_body {
+			max_size 8KB
+		}
+		reverse_proxy shortcut:8000 {
+			transport http {
+				response_header_timeout 120s
+			}
+		}
+	}
+	handle {
+		root * /srv/site
+		file_server
+	}
+}
+
+# This site block only exists so Caddy obtains/renews the Let's Encrypt cert
+# for telemetry.example.com (HTTP-01 on :80; TLS-ALPN is disabled because
+# :443 traffic for this SNI goes to fleet-telemetry). The cert files are copied
+# to /opt/tesla/telemetry/certs by /opt/tesla/bin/telemetry_cert_sync.
+telemetry.example.com {
+	tls {
+		issuer acme {
+			disable_tlsalpn_challenge
+		}
+	}
+	respond "not here" 404
+}

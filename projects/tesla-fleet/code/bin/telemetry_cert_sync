@@ -1,0 +1,20 @@
+#!/bin/sh
+# Copy the Caddy-managed Let's Encrypt cert for telemetry.example.com
+# into /opt/tesla/telemetry/certs (readable by fleet-telemetry's nonroot uid)
+# and restart fleet-telemetry when it changed (it loads the cert only at start).
+set -eu
+H=telemetry.example.com
+VOL=$(docker volume inspect -f '{{.Mountpoint}}' tesla_caddy_data)
+SRC="$VOL/caddy/certificates/acme-v02.api.letsencrypt.org-directory/$H"
+DST=/opt/tesla/telemetry/certs
+mkdir -p "$DST"
+if [ ! -s "$SRC/$H.crt" ] || [ ! -s "$SRC/$H.key" ]; then
+  echo "telemetry_cert_sync: cert for $H not issued yet ($SRC)" >&2; exit 1
+fi
+if cmp -s "$SRC/$H.crt" "$DST/tls.crt" && cmp -s "$SRC/$H.key" "$DST/tls.key"; then
+  exit 0
+fi
+install -m 0644 -o 65532 -g 65532 "$SRC/$H.crt" "$DST/tls.crt"
+install -m 0600 -o 65532 -g 65532 "$SRC/$H.key" "$DST/tls.key"
+echo "telemetry_cert_sync: cert updated ($(openssl x509 -in "$DST/tls.crt" -noout -enddate))"
+cd /opt/tesla && docker compose restart telemetry >/dev/null 2>&1 || true
