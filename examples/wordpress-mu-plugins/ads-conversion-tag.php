@@ -44,7 +44,11 @@ add_action( 'wp_head', static function () {
 	<?php
 }, 5 );
 
-/** Conversion only on a successful send. */
+/**
+ * Conversion only on a successful send. This is the original 1.0.0 version. Since 2026-10-16 production uses
+ * lead-events.php instead (GA4 lead/phone/messenger events + Ads lead and phone conversions).
+ * Use one of the two footer blocks, never both, or the lead is counted twice.
+ */
 add_action( 'wp_footer', static function () {
 	if ( is_admin() ) {
 		return;
@@ -59,8 +63,6 @@ add_action( 'wp_footer', static function () {
 	document.addEventListener('wpcf7mailsent', function () {
 	  if (typeof gtag === 'function') {
 	    gtag('event', 'conversion', {'send_to': '<?php echo esc_js( $send_to ); ?>'});
-	    <?php /* Optional GA4 lead event (proposed by the ads audit; not in the originally shipped version): */ ?>
-	    gtag('event', 'generate_lead', {'method': 'contact_form'});
 	  }
 	}, false);
 	</script>

@@ -1,20 +1,20 @@
 # AI Ops Case Study
 
-> Anonymised case study of a multi-agent system that runs website administration, tracking and Google Ads for two live small-business client sites. Author: Roman Timoshenko (GitHub: romantimesnew, LinkedIn: https://www.linkedin.com/in/timoshenkor/), former data and product analyst, Prague region, who personally ran the client's Google Ads account since 04/2023 and moved the work to AI agents after a hosting hack. All numbers come from the private working repo; unknowns are marked [TODO].
+> Anonymised case study of a multi-agent system that runs website administration, tracking and Google Ads for two live small-business client sites. Author: Roman Timoshenko (GitHub: romantimesnew, LinkedIn: https://www.linkedin.com/in/timoshenkor/), former data and product analyst, Prague region, who personally ran the client's Google Ads account since 04/2023 and moved the work to AI agents after a hosting hack. Period covered: 2026-10-01 to 2026-10-17 (391 commits, 87 task cards, 79 execution reports, 2 sites). Lead tracking deployed 2026-10-16 and verified 2026-10-17; before/after ads results due ~2026-10-30. All numbers come from the private working repo; unknowns are marked [TODO]. Last updated 2026-10-17.
 
 Repository: https://github.com/romantimesnew/ai-ops-case-study
 
 ## Start here
-- [README.md](README.md): why I built this, key takeaways for reviewers, tools I use and why, capabilities matrix, architecture diagram, results
+- [README.md](README.md): why I built this, key takeaways for reviewers, capabilities matrix, dated changelog / recent work, architecture diagram, results, tools I use and why
 - [profile.yaml](profile.yaml): machine-readable claims, each mapped to evidence files
 
 ## Evidence
-- [docs/evidence.md](docs/evidence.md): activity counts from git history and how they were counted, ads changelog excerpt, site audit
-- [docs/measurement-case.md](docs/measurement-case.md): Google Ads + GA4 case: lifetime account history, 0 primary conversions diagnosed, 14-day baseline, governed fixes
+- [docs/evidence.md](docs/evidence.md): activity counts from git history (to 10-12 and 10-13 to 10-17) and how they were counted, ads changelog excerpt and 10-15 to 10-17 summary, site audit
+- [docs/measurement-case.md](docs/measurement-case.md): Google Ads + GA4 case: lifetime account history, 0 primary conversions diagnosed, 14-day baseline, governed fixes, conversion restructure, end-to-end tracking verification
 - [docs/architecture.md](docs/architecture.md): agent roles, access matrix, release path
 - [docs/workflow.md](docs/workflow.md): backlog → task card → report lifecycle, a real anonymised card and report
 - [docs/connectors.md](docs/connectors.md): direct, free Google Ads / GA4 / WordPress / GitHub connector setup, no secrets
 
 ## Reusable
 - [templates/](templates/): agent rules, task card, report, backlog, site passport
-- [examples/wordpress-mu-plugins/](examples/wordpress-mu-plugins/): generic code delivered by the executor agent
+- [examples/wordpress-mu-plugins/](examples/wordpress-mu-plugins/): generic code delivered by the executor agent (tag loader, lead events, 301 redirects, preview guard, theme-file REST plugin)

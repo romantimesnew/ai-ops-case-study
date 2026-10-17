@@ -12,7 +12,7 @@ Why:
 
 1. **Cloud project.** Sign in with the Google account that has access to Ads and GA4. An organisation isn't required, and neither is billing. Create a project such as `<site>-ads-agent`.
 2. **Enable APIs:** Google Ads API, Google Analytics Data API, Google Analytics Admin API.
-3. **OAuth consent.** Audience *External*, app in testing mode. **Add the Google account as a test user.** Without that, sign-in fails with `403 access_denied` ("app not verified").
+3. **OAuth consent.** Audience *External*, app in testing mode to start. **Add the Google account as a test user.** Without that, sign-in fails with `403 access_denied` ("app not verified"). In testing mode Google expires refresh tokens after 7 days. Later the app passed Google's **brand verification** and was published to production (2026-10-16), so the tokens no longer expire. Still no billing.
 4. **OAuth client.** Type *Desktop app*. Download the client JSON. It travels as a file to the agent's machine and is stored in a private folder with `chmod 600`. It never goes in the repo or chat.
 5. **Python venv** on the agent's machine. System pip is locked (PEP 668). Install `google-ads`, `google-analytics-data`, `google-analytics-admin`, `google-auth-oauthlib`.
 6. **Consent flow.** `InstalledAppFlow` with a local redirect server, offline access and a forced consent prompt. Scopes: Ads, and Analytics edit + read-only. The agent opens the consent URL in its own browser, and **the human signs in** (2FA stays with the human). The refresh token is saved next to the client file, also `chmod 600`.
@@ -30,8 +30,9 @@ Steps were checked against Meta's docs in Oct 2026: app via the *Create & manage
 
 ## WordPress
 
-- A **dedicated user for the executor** with the lowest role that works (editor), plus an **application password**. Never the admin account. Deleting things, plugins and security settings each need a separate card.
+- A **dedicated user for the executor** with the lowest role that works, plus an **application password**. Never the owner's own account. It started as editor. On one site it was raised to administrator (2026-10-15) because theme and menu work needs that role; the guardrails (cards, approval gates, no deletes) stayed the same. Deleting things, plugins and security settings each need a separate card.
 - **REST first.** Inventory (plugins, users, theme, pages) is read via the REST API with the application password. Clicks in wp-admin only with a stated reason and approval.
+- **When the file channel fails.** On one host FTP/FTPS proved unreliable, so a small REST plugin was written for child-theme file read/write: admin-only, realpath-guarded, with an extension allowlist. Every write is preceded by a backup, a hash check and `php -l`, and followed by a re-read. See [theme-file-rest.php](../examples/wordpress-mu-plugins/theme-file-rest.php).
 - **File mirror.** Custom code (mu-plugins) and the custom stylesheet are mirrored into `08-files/` of the repo, so the decision chat reads the real current code before writing a card. Core, plugins, themes, images, the database and config files are never mirrored.
 
 ## GitHub

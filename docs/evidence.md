@@ -1,6 +1,6 @@
 # Evidence
 
-This page backs the numbers used in the README. The source is the private working repo, which can't be published because it holds client data. Counts were taken on 2026-10-13 with the commands shown, so they can be reproduced on the original repo.
+This page backs the numbers used in the README. The source is the private working repo, which can't be published because it holds client data. Counts for 2026-10-01 to 10-12 were taken on 2026-10-13, and the update for 10-13 to 10-17 on 2026-10-17, with the commands shown, so they can be reproduced on the original repo.
 
 ## 1. Activity from git history
 
@@ -30,6 +30,23 @@ Commits per day:
 | 2026-10-11 | 21 |
 | 2026-10-12 | 12 |
 
+## 1b. Activity, 2026-10-13 to 2026-10-17
+
+Counted on 2026-10-17 at the private repo's head commit (last commit 2026-10-17 17:45 Europe/Prague), with the same commands. Only `.md` files count as cards; a raw client message saved next to the cards is excluded.
+
+| Metric | Cumulative to 2026-10-17 | Added 2026-10-13 to 10-17 | How counted |
+|---|---|---|---|
+| Commits | 391 | 142 | `git log --oneline \| wc -l`; `git log --since` |
+| Task cards, Client A | 69 | 10 | `.md` files in `site-a/09-ops/inbox/` excluding README |
+| Execution reports, Client A | 61 | 10 | `.md` files in `site-a/09-ops/outbox/` excluding README |
+| Task cards, Client B | 18 | 15 | `site-b/09-ops/inbox/*.md` excluding README |
+| Execution reports, Client B | 18 | 15 | `site-b/09-ops/outbox/*.md` excluding README |
+| **Total cards / reports** | **87 / 79** | **25 / 25** | |
+| Client sites | 2 | 0 new | top-level site folders |
+| Ads changelog entries (change sets) | 9 from 2026-10-12 | 8 | dated sections in `07-ads/changelog.md` |
+
+Commits per day: 2026-10-15: 36 · 2026-10-16: 20 · 2026-10-17: 86. There were no commits on 10-13 and 10-14.
+
 Why cards and reports differ: some cards were superseded by a follow-up card before they ran, and some were still in progress at the cut-off. Finished cards are never rewritten; a follow-up change always gets a new card.
 
 ## 2. Excerpt from the ads changelog
@@ -47,6 +64,21 @@ Anonymised copy of the real `07-ads/changelog.md` entry. Campaign and object IDs
 Source figures for the 90-day shares (to 2026-10-11, account currency): total spend 13,688; Display Network inside Search 3,869 (≈28%); irrelevant queries ≈1,316 (≈10%); 849 clicks; 0 conversions.
 
 The API's change history independently shows the 2026-10-12 geo and network updates with source `GOOGLE_ADS_API`. It shows no event for the third campaign's geo change or for the shared list, probably a limitation of the change-history feed. A re-read on 2026-10-13 confirmed all three campaigns are on PRESENCE with Display off, and the shared list is enabled on 3 campaigns with 51 members.
+
+## 2a. Ads changelog, 2026-10-15 to 10-17 (summary, anonymised)
+
+Every entry records the approval time, the `validate_only` result, apply time, before → after per object, and a re-read check. Object IDs, texts naming people or places, and phone numbers are removed here.
+
+| Date | Change set | Verification recorded |
+|---|---|---|
+| 10-15 | Final URLs of 2 disapproved ads, 1 sitelink and the ad group's keywords moved to the new production page | all objects show the new URL; ads in re-review |
+| 10-16 | Call asset tied to the calls conversion; callouts and snippet attached to 3 active campaigns (12 links); 5 sitelinks rewritten, 2 added; schedule aligned to opening hours | links, texts and schedules re-read |
+| 10-16 | Form lead → primary (data-driven); page views → secondary or out of bidding goals; phone-click action created (secondary); 16 negatives added (51 → 67) | bidding goals = lead form + calls from ads |
+| 10-16 | GA4: 3 custom dimensions, 2 key events (`generate_lead`, `phone_click`) | present on re-read, no duplicates |
+| 10-16 | Old call asset unlinked after the new one was approved | only the new asset remains, eligible |
+| 10-16 | Two RSAs expanded 3/2 → 15/4 headlines/descriptions; one landing page moved to a service page | ENABLED, 15/4, no pinning |
+| 10-17 | Schedule → 07:00–24:00 daily; call asset stays in business hours | 7 days × 07–24 on 3 campaigns |
+| 10-17 | Disapproved headline and sitelink text fixed; 34 negatives added (→ 101); 9 phrase-match keywords | 101 members, 9 keywords ENABLED |
 
 ## 2b. Read-only account export (2026-10-13)
 
@@ -85,3 +117,4 @@ Output: a staged fix plan with explicit boundaries. Prices, packages, publishing
 > "Clicking the site burns the limit. File, REST or mirror first. A click only after the owner's answer. Don't repeat an empty attempt."
 > "Any change in Ads, GA4 or a click in the browser only after the owner's personal confirmation. Confirmation from the project chat or another bot doesn't count."
 > "A new structure or a new rule is written down immediately, in the same turn as the decision."
+> "If there is no ready-made solution, consider building your own. Estimate its cost and complexity before choosing." (added 2026-10-17)

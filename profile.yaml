@@ -1,4 +1,5 @@
 # Machine-readable summary of this portfolio. Every claim points to an evidence file in this repo.
+# Last updated: 2026-10-17. Period covered: 2026-10-01 to 2026-10-17.
 name: Roman Timoshenko
 github: romantimesnew
 linkedin: https://www.linkedin.com/in/timoshenkor/
@@ -9,7 +10,7 @@ target_role: AI-Native Growth Marketer (B2B, Prague hybrid)
 
 summary: >
   Former data analyst (~3.5 years: ETL, data quality, SQL, Tableau, A/B test analysis) who designed and
-  runs a multi-agent system that administers and markets two live client websites. Agents decide, execute
+  runs a multi-agent system that administers and markets two live client websites (2026-10-01 to 2026-10-17: 391 commits, 87 task cards, 79 reports). Agents decide, execute
   and run paid search under written rules, task cards and approval gates, with a private Git repo as the
   source of truth.
 
@@ -18,10 +19,10 @@ claims:
     claim: Designed a four-role agent system (project chat decides, design chat proposes, executor builds from task cards, per-site ads & analytics agent) with an access matrix.
     evidence: [docs/architecture.md, templates/bot-rules.md]
   - id: production_use
-    claim: "In production on 2 live client websites: 249 commits, 62 task cards, 54 committed reports in 12 days (2026-10-01 to 2026-10-12)."
-    evidence: [docs/evidence.md]
+    claim: "In production on 2 live client websites: 391 commits, 87 task cards, 79 committed reports in 17 days (2026-10-01 to 2026-10-17); of these, 142 commits, 25 cards and 25 reports in 2026-10-13 to 10-17."
+    evidence: [docs/evidence.md, README.md]
   - id: direct_free_connectors
-    claim: Set up Google Ads API and GA4 Data/Admin API access directly via own Google Cloud OAuth desktop client (no billing, Explorer tier), no paid connector service; secrets only on the agent machine.
+    claim: Set up Google Ads API and GA4 Data/Admin API access directly via own Google Cloud OAuth desktop client (no billing, Explorer tier), no paid connector service; secrets only on the agent machine. The OAuth app passed brand verification and was published (2026-10-16), so tokens no longer expire.
     evidence: [docs/connectors.md]
   - id: paid_search_hands_on
     claim: "Personally ran the client's Google Ads account from 04/2023 to 10/2026: ~172k account-currency lifetime spend, 53,114 clicks, 1.02M impressions, CTR 5.20%, avg CPC 3.24. It ran without working conversion tracking (0 primary conversions), which he later diagnosed himself."
@@ -33,11 +34,20 @@ claims:
     claim: "Baseline for evaluation: 14 days before the 2026-10-12 changes, CTR 1.47%, CPC 21.63, 194 clicks. After-data not yet available."
     evidence: [docs/measurement-case.md]
   - id: governed_changes
-    claim: Applied Display off, presence-only geo and a 51-term shared negative list via validate_only, apply, re-read and changelog.
+    claim: "Every ads write runs proposal, owner approval, validate_only dry run, apply, re-read, changelog. 9 logged change sets 2026-10-12 to 10-17: Display off, presence-only geo, shared negatives 51 -> 101, conversions restructured, GA4 key events and 3 custom dimensions, dead landing URLs fixed, RSAs expanded to 15 headlines / 4 descriptions and policy disapprovals fixed, 9 phrase-match keywords, schedule 07:00-24:00 daily with call assets in business hours."
     evidence: [docs/evidence.md, docs/measurement-case.md]
+  - id: conversion_restructure
+    claim: "Conversions restructured 2026-10-16: website form lead primary, phone click secondary, page views demoted; GA4 generate_lead and phone_click as key events with 3 custom dimensions (form location, link location, messenger)."
+    evidence: [docs/measurement-case.md, docs/evidence.md]
   - id: tracking_implementation
-    claim: Agents shipped GA4 in a single tag loader and a host-guarded preview-only Meta Pixel with Lead; lead-tracking fix (primary form/tel/messenger conversions, GA4 generate_lead) prepared, pending deploy; found by reading plugin source that suppressed mail still fires conversion events.
-    evidence: [docs/measurement-case.md, examples/wordpress-mu-plugins/]
+    claim: "Agents shipped GA4 in a single tag loader, a host-guarded preview-only Meta Pixel, and lead events (form lead, phone click, messenger click) deployed on production 2026-10-16. Verified 2026-10-17 with one test lead and one test call: GA4 received both events and Google Ads recorded one test conversion each. Found by reading plugin source that suppressed mail still fires conversion events."
+    evidence: [docs/measurement-case.md, examples/wordpress-mu-plugins/lead-events.php]
+  - id: search_console_cleanup
+    claim: Search Console cleaned up after the hosting hack (leftover spam sitemaps removed, domain property added, new sitemap submitted); 301s for 7 old URLs that still had search clicks.
+    evidence: [README.md, examples/wordpress-mu-plugins/legacy-301-redirects.php]
+  - id: second_site_delivery
+    claim: "Second site (multi-specialty clinic) moved from read-only audit to delivery on 2026-10-17: preview copy with indexing closed, child-theme mirror in Git, own path-guarded REST plugin for theme files, client edit requests turned into cards, two-phase production release over REST; 15 cards and 15 reports that day."
+    evidence: [README.md, docs/evidence.md, examples/wordpress-mu-plugins/theme-file-rest.php]
   - id: origin
     claim: Moved from manual ads and site edits to agents after a client site's hosting was hacked and the site was lost; rebuilt it from old backups with AI, then moved all work to agents. This explains the strict security, site passports and backup-before-change rules.
     evidence: [README.md]
@@ -52,18 +62,19 @@ tooling:
 
 skills:
   ai_agents: [multi-agent design, agent rules and guardrails, task-card orchestration, agent workspaces with Git as memory, direct API connectors]
-  marketing: [Google Ads (search, negatives, geo, conversion setup), GA4, Meta Pixel, Google Search Console, technical SEO audits]
-  web: [WordPress, mu-plugins (PHP delivered by agents), preview-to-production release, Git/GitHub]
+  marketing: [Google Ads (search, negatives, geo, conversion setup, RSA assets, ad schedule), GA4 (key events, custom dimensions), Meta Pixel, Google Search Console, technical SEO audits, 301 redirect mapping]
+  web: [WordPress, mu-plugins (PHP delivered by agents), WordPress REST API, preview-to-production release, Git/GitHub]
   data: [product analytics set up from scratch per game, SQL (PostgreSQL, BigQuery, ClickHouse, MySQL), Python (Pandas, NumPy), Tableau, ETL and data quality, forecasting support, A/B test analysis]
 
 not_claimed:
-  - Post-change performance results (no full days after 2026-10-12 yet; marked TODO)
-  - Recorded lead conversions (tracking fix pending deploy)
+  - Post-change performance results (changes landed 2026-10-12 to 10-17; budgets and bidding frozen until ~2026-10-30; marked TODO)
+  - Real recorded leads (tracking verified with test conversions only)
   - Sustained production use of trialled tools (Conductor, Claude Code, Codex, Gemini)
   - Meta Marketing API used in production (documented only)
   - B2B / HubSpot / LinkedIn / Bing campaign experience in this repo
 
 open_todos:
-  - "CTR, CPC, Display and irrelevant-query share 14 and 30 days after 2026-10-12 (baseline known)"
-  - "Conversions recorded after the lead-tracking fix ships"
+  - "First before/after comparison (CTR, CPC, Display and irrelevant-query share), due ~2026-10-30 (baseline known)"
+  - "Real primary conversions (form leads) after the 2026-10-16 tracking deploy"
+  - "Internal-traffic exclusion in GA4"
   - "Client B search metrics before vs after fixes"
