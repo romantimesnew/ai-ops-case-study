@@ -3,7 +3,7 @@
 > I'm a former data analyst. Today I run website administration, tracking and paid search for two small-business clients, and most of the hands-on work is done by AI agents I designed, briefed and govern. This repo is an anonymised write-up of that system: how it is wired, the rules that keep it safe, and what it has produced so far.
 
 **Clients (anonymised):** Client A, a wellness centre (WordPress landing site plus Google Ads), and Client B, a multi-specialty medical clinic (WordPress site with about 200 URLs in two languages).
-**Period covered:** first 17 days of the system in production (2026-10-01 to 2026-10-17). Last updated 2026-10-17; see [Changelog / recent work](#changelog--recent-work).
+**Period covered:** first 17 days of the system in production (2026-10-01 to 2026-10-17). Last updated 2026-10-26 (side projects and tools); see [Changelog / recent work](#changelog--recent-work).
 **Author:** Roman Timoshenko · [GitHub](https://github.com/romantimesnew) · [LinkedIn](https://www.linkedin.com/in/timoshenkor/)
 **Status:** live and in daily use. Numbers come from the private working repo and read-only exports from the ad accounts. Missing numbers are marked `[TODO]`; nothing here is estimated.
 
@@ -24,7 +24,8 @@ Every claim below links to the evidence for it in this repo. Numbers come from t
 5. **Changes are governed and auditable.** Every ads write goes proposal → owner approval → `validate_only` (dry run) → apply → re-read → changelog entry. From 2026-10-12 to 10-17 that process carried 9 logged change sets: Display off, presence-only geo, negatives grown from 51 to 101 terms, conversions restructured, GA4 key events and custom dimensions, ads rewritten, ad schedule. A reviewed keyword-list mistake was caught and corrected the same minute. → [docs/evidence.md](docs/evidence.md#2-excerpt-from-the-ads-changelog), [docs/measurement-case.md](docs/measurement-case.md#what-was-changed-2026-10-12-all-approved-by-me)
 6. **Agents deliver working code from task cards, verified with evidence.** The executor shipped WordPress mu-plugins for tracking, lead events, legacy-URL 301s, a preview-copy guard and spam-URL blocking, each with before/after checks in its report. Lead tracking went live on 2026-10-16. On 2026-10-17 one test lead and one test call showed up in both GA4 and Google Ads. → [examples/wordpress-mu-plugins/](examples/wordpress-mu-plugins/), [docs/workflow.md](docs/workflow.md)
 7. **Onboarding a second site reuses the same system.** For Client B the agents moved from a read-only audit to delivery on 2026-10-17: a preview copy with indexing closed, a child-theme mirror in Git, client edit requests turned into cards, and a two-phase production release over REST. That one day produced 15 cards and 15 reports. → [Changelog](#changelog--recent-work)
-8. **The pattern carries over to other domains.** The parts that make it work (source-of-truth files, task cards, role-scoped rules, approval gates, direct API connectors) are domain-neutral and come as templates. → [templates/](templates/)
+8. **I run AI agents outside client work too, and verify their output.** A multi-agent research setup delegates jobs to Claude Code and Grok Build on my Mac, with isolated workspaces, a shared job lock and an independent checker for every result. A self-hosted Tesla telemetry system sends me an automated daily report (every day since 2026-10-17) and produced a measurable result: ≈101,000 CZK energy savings vs. my old diesel, calculated from real data. → [Multi-agent research setup](#multi-agent-research-setup-how-the-agents-work), [projects/tesla-fleet/](projects/tesla-fleet/)
+9. **The pattern carries over to other domains.** The parts that make it work (source-of-truth files, task cards, role-scoped rules, approval gates, direct API connectors) are domain-neutral and come as templates. → [templates/](templates/)
 
 What this repo does **not** claim: post-change performance (the ads changes landed 2026-10-12 to 10-17, budgets and bidding are frozen until about 2026-10-30, and the first before/after comparison comes then, so these stay `[TODO]`), real recorded leads (tracking is verified with test events only; real lead counts are `[TODO]`), Meta Marketing API use in production (documented, not yet run), and production use of the tools I only trialled (see [Tools I use and why](#tools-i-use-and-why)).
 
@@ -43,6 +44,8 @@ What this repo does **not** claim: post-change performance (the ads changes land
 | Web via code | mu-plugins, file mirror in Git, preview → production release path, one-file rollback; own REST plugin for theme files when the host's file channel was unreliable | [examples/](examples/wordpress-mu-plugins/), [architecture.md](docs/architecture.md#release-path), [theme-file-rest.php](examples/wordpress-mu-plugins/theme-file-rest.php) |
 | Site onboarding | Second site taken from audit to preview copy to a two-phase production release in one day, with the same executor and card format | [Changelog](#changelog--recent-work), [evidence.md](docs/evidence.md#1b-activity-2026-10-13-to-2026-10-17) |
 | Data analysis background | ~3.5 years as a data and product analyst at mobile game companies: analytics set up from scratch per game, ETL, forecasts, A/B test analysis, decision support for marketers and producers | CV (separate document) |
+| Verification of AI output | Independent checker for every AI result; important results redone with swapped roles or two independent builds; failed results checked as hard as successes; guards and automatic tests before saving | [Multi-agent research setup](#multi-agent-research-setup-how-the-agents-work) |
+| Event streaming & own server | Tesla telemetry: Caddy (TLS passthrough) → Kafka → Python consumer → TimescaleDB; daily automated summary; voice commands with geofence | [projects/tesla-fleet/](projects/tesla-fleet/) |
 | Tool selection | Main system on one agent platform with role-based bots; other agent tools trialled and compared per task | [Tools I use and why](#tools-i-use-and-why) |
 
 Machine-readable summary: [profile.yaml](profile.yaml) · Index for LLM readers: [llms.txt](llms.txt)
@@ -218,16 +221,30 @@ How-to without secrets: [docs/connectors.md](docs/connectors.md)
 3. **A weekly insight digest:** Ads + GA4 (+ CRM when available) pulled by API into a short "here's what changed and what to do next" note, committed to the repo.
 4. **Make onboarding a template:** a new site becomes a new folder with a passport, rules and inbox/outbox. The executor stays the same agent; only the ads agent is per site.
 
+## Multi-agent research setup: how the agents work
+
+Besides the client work, I run several specialised AI bots. One of them ("Trader") does trading research. I publish only how its agents work, not strategies, numbers, results or code.
+
+- **Delegation:** Trader hands research and computation jobs to Claude Code and Grok Build (CLI coding agents) running on my Mac, and gets notified when a job finishes.
+- **Isolation:** each bot works in its own folder. A shared lock lets only one job run at a time, so bots never disrupt each other's work.
+- **Purpose first:** every task must have a stated purpose before it starts.
+- **Independent checking:** every AI result gets a checker that did not produce it: another model, or a clean session that sees only the code, the data and the result.
+- **Redo important results:** they are rebuilt with the roles swapped, or by two independent builds, and the outputs are compared.
+- **Failures get the same rigour:** a failed or "No-Go" result is checked as carefully as a success, so a bug can't kill a good idea or hide a bad one.
+- **Guards and tests:** built-in guards and automatic tests catch errors before anything is saved.
+
 ## Tools I use and why
 
 - **Main working system:** Grok Bot, running several role-based bots (project chats, the executor, a per-site ads & analytics bot, a personal assistant). Each one has its own profile rules and reads the same Git repo.
-- **Trialled and compared, used per task:** Conductor (agent orchestrator), Claude Code, Codex and Gemini. I evaluated them against the same kind of tasks and picked the tool per task. None of them is a dependency of the system described here, and I don't claim sustained production use of them.
+- **CLI coding agents on my Mac:** Claude Code and Grok Build (xAI's CLI coding agent). I use them for coding, research and data jobs, including jobs delegated by my bots (see [Multi-agent research setup](#multi-agent-research-setup-how-the-agents-work)).
+- **Trialled and compared, used per task:** Conductor (agent orchestrator), Codex and Gemini. I don't claim sustained production use of them.
 - **Everyday tools:** git/GitHub, Python (API scripts in venvs), Docker, Warp (terminal), Zed (editor).
 - **Selection rule:** use the cheapest tool that reliably reaches the goal (API over browser, file over click), and keep the repo, not the tool, as the system of record, so tools can be swapped without losing memory.
 
 ## Other projects
 
-- **[Tesla Fleet: self-hosted data and voice-control server for my own car](projects/tesla-fleet/)** (2026-10-17). Built in one day with an AI agent on Tesla's official Fleet API, signed-command proxy and Fleet Telemetry: the car pushes data over mTLS through Kafka into TimescaleDB, with no API polling, and Siri, Shortcuts and Apple Watch commands go through a small Python service with a bearer token and an 8 m geofence for the trunk, frunk and charge port. Includes a wake-up log, the security setup, who did what, and the sanitised code.
+- **[Tesla Fleet: self-hosted telemetry, daily reports and voice control for my own car](projects/tesla-fleet/)** (since 2026-10-17). My Tesla Model 3 streams telemetry to my own server via Tesla Fleet Telemetry: Caddy (TLS passthrough) → Kafka → Python consumer → TimescaleDB. The car is never woken by polling. Every evening around 19:30 an automated job reads only the database and sends me a daily summary (wake-ups with likely cause, trips with km and consumption, charging, state, tyre pressure, system health); it has run every day without gaps since 2026-10-17. Voice control via Siri/Shortcuts goes through a protected endpoint (bearer token, signed Fleet API commands); trunk, frunk and charge port open only if my iPhone is within 8 m (server-side distance check). I also investigated night self-wake-ups from telemetry, and calculated **≈101,000 CZK energy savings** vs. my previous diesel car over 49,337 km (range 78,000–123,000 CZK, energy/fuel only).
+- **Hobby:** with my wife, I've started developing a video game at home (early stage).
 
 ## Repo map
 
@@ -242,7 +259,7 @@ profile.yaml                 machine-readable summary: role fit, skills, evidenc
 llms.txt                     index of key files for LLM readers
 templates/                   agent rules, task card, report, site passport, backlog
 examples/wordpress-mu-plugins/  generic, client-free code the executor shipped
-projects/tesla-fleet/         side project: self-hosted Tesla telemetry + voice control, sanitised code
+projects/tesla-fleet/         side project: Tesla telemetry, daily report, voice control, savings analysis, sanitised code
 ```
 
 *Anonymisation: client names, domains, account and tag IDs, hosts, contacts and security settings are removed or replaced with placeholders such as `{ADS_TAG_ID}`.*

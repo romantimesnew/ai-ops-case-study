@@ -5,7 +5,7 @@
 Repository: https://github.com/romantimesnew/ai-ops-case-study
 
 ## Start here
-- [README.md](README.md): why I built this, key takeaways for reviewers, capabilities matrix, dated changelog / recent work, architecture diagram, results, tools I use and why
+- [README.md](README.md): why I built this, key takeaways for reviewers, capabilities matrix, dated changelog / recent work, architecture diagram, results, multi-agent research setup (verification of AI output), tools I use and why
 - [profile.yaml](profile.yaml): machine-readable claims, each mapped to evidence files
 
 ## Evidence
@@ -20,4 +20,4 @@ Repository: https://github.com/romantimesnew/ai-ops-case-study
 - [examples/wordpress-mu-plugins/](examples/wordpress-mu-plugins/): generic code delivered by the executor agent (tag loader, lead events, 301 redirects, preview guard, theme-file REST plugin)
 
 ## Other projects
-- [projects/tesla-fleet/](projects/tesla-fleet/): side project (2026-10-17): self-hosted data collection and Siri/Shortcuts voice control for my own Tesla Model 3 on the official Fleet API, vehicle-command proxy and Fleet Telemetry (mTLS, Kafka, TimescaleDB, no polling), built in one day with an AI agent; sanitised code in code/
+- [projects/tesla-fleet/](projects/tesla-fleet/): side project (2026-10-17): self-hosted data collection and Siri/Shortcuts voice control for my own Tesla Model 3 on the official Fleet API, vehicle-command proxy and Fleet Telemetry (mTLS, Kafka, TimescaleDB, no polling), built in one day with an AI agent; automated daily summary since 2026-10-17; ~101,000 CZK savings analysis vs diesel; sanitised code in code/

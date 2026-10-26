@@ -4,7 +4,7 @@
 
 **Date:** 2026-10-17 (one day, idea to working voice commands)
 **Author:** Roman Timoshenko · [GitHub](https://github.com/romantimesnew) · [LinkedIn](https://www.linkedin.com/in/timoshenkor/)
-**Status:** running and in daily use. Visualisation is not built yet. There are no database backups yet (see [Security](#security)).
+**Status:** running and in daily use; the automated daily summary has run every evening without gaps since 2026-10-17. Visualisation is not built yet. There are no database backups yet (see [Security](#security)).
 
 ---
 
@@ -59,7 +59,7 @@ A small Python HTTP service handles the iOS Shortcuts and Siri commands. It read
 - All telemetry goes into TimescaleDB, with SQL views for the latest state of every field, per-minute aggregates (battery, range, speed, power, temperatures, charging, gear), the location track and a 24-hour ingest volume check.
 - **Wake-up log.** Tesla doesn't say why the car woke up, so the server guesses. Each connect event is matched with the values the car sends on connect and labelled with a likely cause: doors or unlocking, key or phone nearby, Sentry, charging or a charge schedule, climate, software update, driving, or one of my own commands.
 - **API-call log.** Every call the server makes to Tesla is logged (without tokens) and attached to nearby wake-ups, so I can prove the server itself isn't waking the car.
-- **Nightly summary** that reads only the database and never wakes the car. (It runs on the server and is not part of the published code.)
+- **Daily summary, every evening around 19:30.** An automated job reads only the database (it never wakes the car) and sends me a short report: wake-ups with their likely cause (drive, charging, Sentry, command, preconditioning, self-wake), trips with km and consumption, charging sessions, current state, tyre pressure and system health. It has run every day without gaps since 2026-10-17. (It runs on the server and is not part of the published code.)
 
 **Voice control** through Siri, Shortcuts and Apple Watch
 - Trunk, frunk, charge port, charging start/stop, climate on/off and temperature, max defrost, seat heat, lock/unlock, horn and lights.
@@ -67,6 +67,33 @@ A small Python HTTP service handles the iOS Shortcuts and Siri commands. It read
 - **Parked-car marker in Apple Maps**, set from the car's last known location.
 - **Geofence:** trunk, frunk and charge port open only if my iPhone is within **8 m** of the car. A far-away request is refused before anything is sent to Tesla, so it doesn't even wake the car.
 - **Dry-run mode** that runs all checks and replies "Test only: would send …" without sending anything.
+
+## Investigation: why does the car wake up at night?
+
+The wake-up log showed the car sometimes waking at night with no drive, charge or command. To tell a person from a self-wake, I did a controlled test: I pulled the door handle and compared the telemetry. The handle pull left a distinct lock-screen trace in the data. The night wake-ups don't have that trace, which points to the car waking itself rather than someone touching it. This is a working conclusion from telemetry, not a confirmed root cause.
+
+## Savings analysis: Tesla vs. my previous diesel car
+
+Built from real data: the car's odometer telemetry, Supercharger sessions from the Fleet API, home electricity meter readings and real monthly tariffs. Compared with my previous car, a 2012 Mercedes ML350 BlueTEC diesel. Energy and fuel only.
+
+| | Tesla Model 3 | Diesel ML350 (same km) |
+|---|---|---|
+| Period | Dec 2023 – Oct 2026 | same |
+| Distance | 49,337 km | 49,337 km |
+| Energy / fuel cost | **≈ 82,500 CZK** (1.67 CZK/km) | **≈ 183,900 CZK** (3.73 CZK/km) |
+| Of which | home 9,601 kWh = 69,443 CZK; Supercharger 1,288 kWh = 13,078 CZK | 10.3 l/100 km |
+
+**Savings: ≈ 101,000 CZK (≈ 35,600 CZK per year).** Sensitivity range: 78,000 – 123,000 CZK.
+
+How it was calculated (short):
+- **Distance** from the car's odometer telemetry (miles converted to km).
+- **Home charging:** household meter readings minus the household's own use before the car (a per-day baseline), priced at the real monthly ČEZ tariffs, variable price incl. VAT.
+- **Supercharging:** actual paid sessions from the Tesla Fleet API (a cloud-only endpoint, the car was not woken), converted from EUR at the ČNB rate on the session day.
+- **Diesel:** official Czech monthly average diesel prices; consumption 10.3 l/100 km, a real-world average for this model from a public fuel-log database, with lower and higher consumption scenarios for the sensitivity range.
+- **Cross-check:** energy charged vs. the car's lifetime energy counter, to make sure no large charging was missing.
+- **Not included:** insurance, service, tax, depreciation, tolls and parking. Known uncertainties (early tariff, household baseline, modelled spread of km over months) are covered by the range.
+
+Only these totals are published; the raw data stays private.
 
 ## Security
 
@@ -89,7 +116,7 @@ A small Python HTTP service handles the iOS Shortcuts and Siri commands. It read
 
 **The AI agent**
 - Architecture, key generation, server setup and hardening, the Docker stack.
-- The Python services (OAuth helper, Kafka consumer, voice service, CLI), the database schema and views, the wake-cause logic and the nightly summary.
+- The Python services (OAuth helper, Kafka consumer, voice service, CLI), the database schema and views, the wake-cause logic and the daily summary.
 - Step-by-step iOS Shortcuts instructions, and debugging.
 
 ## Problems solved along the way
@@ -109,6 +136,7 @@ A small Python HTTP service handles the iOS Shortcuts and Siri commands. It read
 - **Event streaming:** a push pipeline (mTLS, Kafka, consumer, TimescaleDB) with at-least-once delivery, instead of polling.
 - **Security hygiene:** minimal open ports, localhost-only services, key-only SSH, secrets outside the repo, tokens and proximity checks on risky actions, revoking access I didn't trust.
 - **Directing an AI agent:** the agent did most of the building, but I set the requirements, caught its mistakes and pushed back when it was wrong.
+- **Measurable outcome from real data:** ≈101,000 CZK energy savings vs. diesel, calculated from telemetry, meter data and real tariffs, with a stated method and range.
 - **Owning decisions and real-world testing:** I made the design calls, ran every real-car test myself, and I'm stating the open gaps (no backups, no visualisation yet).
 
 ## Code
