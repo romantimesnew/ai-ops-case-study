@@ -58,7 +58,7 @@ claims:
     claim: "Automated daily summary every evening ~19:30 from the database only (wake-ups with likely cause, trips, charging, state, tyre pressure, system health), running daily without gaps since 2026-10-17. Telemetry investigation of night self-wake-ups. Savings analysis Dec 2023-Oct 2026, 49,337 km: Tesla energy ~82,500 CZK vs diesel ~183,900 CZK; savings ~101,000 CZK (~35,600 CZK/yr), range 78,000-123,000 CZK, energy/fuel only."
     evidence: [projects/tesla-fleet/README.md]
   - id: multi_agent_research_setup
-    claim: "Several specialised AI bots; a trading-research bot delegates jobs to Claude Code and Grok Build on my Mac. Isolated folder per bot, shared lock (one job at a time), stated purpose before each task, independent checker for every AI result, important results redone with swapped roles or two independent builds, failed results checked as rigorously as successes, guards and automatic tests before saving. No strategies or results published."
+    claim: "Client project in trading: AI agents help with research; a dedicated research bot delegates jobs to Claude Code and Grok Build on my Mac. Isolated folder per bot, shared lock (one job at a time), stated purpose before each task, independent checker for every AI result, important results redone with swapped roles or two independent builds, failed results checked as rigorously as successes, guards and automatic tests before saving. Client work: no strategies or results published."
     evidence: [README.md]
   - id: transferable_pattern
     claim: The operating model (source-of-truth files, task cards, role-scoped rules, approval gates) is domain-neutral and published as templates.
