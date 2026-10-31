@@ -3,7 +3,7 @@
 > I'm a former data analyst. Today I run website administration, tracking and paid search for two small-business clients, and most of the hands-on work is done by AI agents I designed, briefed and govern. This repo is an anonymised write-up of that system: how it is wired, the rules that keep it safe, and what it has produced so far.
 
 **Clients (anonymised):** Client A, a wellness centre (WordPress landing site plus Google Ads), and Client B, a multi-specialty medical clinic (WordPress site with about 200 URLs in two languages).
-**Period covered:** first 17 days of the system in production (2026-10-01 to 2026-10-17). Last updated 2026-10-26 (side projects and tools); see [Changelog / recent work](#changelog--recent-work).
+**Period covered:** first 17 days of the system in production (2026-10-01 to 2026-10-17). Last updated 2026-10-31 (work 2026-10-18 to 10-31, RetraceTrade, agent pipeline); see [Changelog / recent work](#changelog--recent-work).
 **Author:** Roman Timoshenko · [GitHub](https://github.com/romantimesnew) · [LinkedIn](https://www.linkedin.com/in/timoshenkor/)
 **Status:** live and in daily use. Numbers come from the private working repo and read-only exports from the ad accounts. Missing numbers are marked `[TODO]`; nothing here is estimated.
 
@@ -25,7 +25,8 @@ Every claim below links to the evidence for it in this repo. Numbers come from t
 6. **Agents deliver working code from task cards, verified with evidence.** The executor shipped WordPress mu-plugins for tracking, lead events, legacy-URL 301s, a preview-copy guard and spam-URL blocking, each with before/after checks in its report. Lead tracking went live on 2026-10-16. On 2026-10-17 one test lead and one test call showed up in both GA4 and Google Ads. → [examples/wordpress-mu-plugins/](examples/wordpress-mu-plugins/), [docs/workflow.md](docs/workflow.md)
 7. **Onboarding a second site reuses the same system.** For Client B the agents moved from a read-only audit to delivery on 2026-10-17: a preview copy with indexing closed, a child-theme mirror in Git, client edit requests turned into cards, and a two-phase production release over REST. That one day produced 15 cards and 15 reports. → [Changelog](#changelog--recent-work)
 8. **I run AI agents beyond web work too, and verify their output.** For a client in trading, a multi-agent research setup delegates jobs to Claude Code and Grok Build on my Mac, with isolated workspaces, a shared job lock and an independent checker for every result. A self-hosted Tesla telemetry system sends me an automated daily report (every day since 2026-10-17) and produced a measurable result: ≈101,000 CZK energy savings vs. my old diesel, calculated from real data. → [Multi-agent research setup](#multi-agent-research-setup-how-the-agents-work), [projects/tesla-fleet/](projects/tesla-fleet/)
-9. **The pattern carries over to other domains.** The parts that make it work (source-of-truth files, task cards, role-scoped rules, approval gates, direct API connectors) are domain-neutral and come as templates. → [templates/](templates/)
+9. **The same agent team builds a product.** RetraceTrade, a pre-beta educational simulator, is planned, built and independently checked by my agents (566 automated tests); I approve the plans. → [RetraceTrade](#retracetrade-pre-beta-product-built-by-the-agent-team)
+10. **The pattern carries over to other domains.** The parts that make it work (source-of-truth files, task cards, role-scoped rules, approval gates, direct API connectors) are domain-neutral and come as templates. → [templates/](templates/)
 
 What this repo does **not** claim: post-change performance (the ads changes landed 2026-10-12 to 10-17, budgets and bidding are frozen until about 2026-10-30, and the first before/after comparison comes then, so these stay `[TODO]`), real recorded leads (tracking is verified with test events only; real lead counts are `[TODO]`), Meta Marketing API use in production (documented, not yet run), and production use of the tools I only trialled (see [Tools I use and why](#tools-i-use-and-why)).
 
@@ -53,6 +54,26 @@ Machine-readable summary: [profile.yaml](profile.yaml) · Index for LLM readers:
 ## Changelog / recent work
 
 Dates are when the change was committed or applied (Europe/Prague). Source: the private working repo (git log, task cards, execution reports, ads changelog) plus status notes from the ads & analytics agent. Counts are in [docs/evidence.md](docs/evidence.md#1b-activity-2026-10-13-to-2026-10-17).
+
+### 2026-10-18 to 2026-10-31
+
+**Client A: ads and measurement** (all changes approved by me, `validate_only` before each, logged in the changelog)
+- **Honest baseline:** in the 14 days 2026-10-17 to 10-30 the account recorded **0 primary conversions** (1 form lead and 6 phone clicks as secondary), and 44–69% of impressions were lost to ad rank. No meaningful before/after result yet.
+- **2026-10-23 / 10-26:** search-term cleanup, shared negative list extended.
+- **2026-10-27:** the call-back request from the phone widget (Binotel) set up as a GA4 key event and a primary Ads conversion.
+- **2026-10-31, restructure after 14 days without conversions:** 3 Search campaigns moved to Maximise clicks with a CPC cap, budget reallocated, ad schedule, brand campaign on manual CPC, 11 negatives, new keywords for a core service. Conversions: page views and generic contact removed from primary; a call from an ad now counts from 30 s instead of 60 s; `messenger_click` (Viber/Telegram/Instagram) made primary. Two poor-quality ads rewritten (15 headlines, 4 descriptions), one ad pointed to its service page, a duplicate keyword paused, 3 ads added in a second language.
+- **In progress:** call tracking. **Status: implemented, results being measured** (first reads in the weekly summaries of 2026-11-02 and 11-09). `[TODO: after numbers]`
+
+**Client A: site** (built by the executor from cards, released by machine-checked steps)
+- **2026-10-27:** the host closed SFTP/SSH (only HTTPS left), so the agents wrote a custom WordPress REST mu-plugin for file read/write (server-side backup before each write, admin application password only, 401 without auth) plus a guard plugin, and deployed it to preview and production. A production 401 was traced to the server stripping the Authorization header.
+- Call-back widget installed on preview and production.
+- Releases are verified by machine only: byte/hash comparison and raw diff, a rollback copy before every write, local checks (`php -l`, `node --check`, CSS parser) and HTTP 200 checks on desktop and mobile user agents.
+
+**Process and agents**
+- One pipeline for all build work: plan → build → independent check in a clean session → fixes → re-check. A shared lock allows one heavy job at a time; a webhook reports completion; Grok Build continues when Claude Code hits its usage limit.
+- Before a test or experiment, the agent writes a pre-registration: hypothesis, metrics and success/fail criteria fixed up front. Results not yet verified are marked as hypotheses.
+- Routine automations (data collection, monitors, backups) alert only on failure.
+- Every task starts with clarify → plan → execute and a stated purpose ("so that what?").
 
 ### 2026-10-13 to 2026-10-17: 142 commits, 25 task cards, 25 reports
 
@@ -232,6 +253,17 @@ For a client in the trading space, I run a research project with AI agents: a de
 - **Redo important results:** they are rebuilt with the roles swapped, or by two independent builds, and the outputs are compared.
 - **Failures get the same rigour:** a failed or "No-Go" result is checked as carefully as a success, so a bug can't kill a good idea or hide a bad one.
 - **Guards and tests:** built-in guards and automatic tests catch errors before anything is saved.
+- **Pre-registration:** the orchestrator bot writes the hypothesis, metrics and success/fail criteria before a job runs, decides on the result and reports to me. A held-out data set stays closed until one final check.
+- **Safety between bots:** no bot cancels another's job, executors never receive secrets, jobs restart automatically after a usage limit, and steps in long autonomous chains are reported as they finish.
+
+## RetraceTrade: pre-beta product built by the agent team
+
+An English web app (pre-beta, runs locally; online beta with a waitlist planned): an **educational, step-by-step simulator of trading strategies** (DCA, grid, moving-average cross) on historical crypto data, for beginners. Each step has a short lesson, you can step back and recalculate, the future chart stays hidden, and users can connect their own AI (ChatGPT/Claude/Grok via MCP or their own API key). No trading advice and no real accounts.
+
+- **How it is built:** I don't write the code. A Grok Bot role bot plans and reviews; Claude Code and Grok Build on my Mac build; every stage goes plan → build → independent clean-session check → fixes → re-check. I approve the plans.
+- **What the agents built:** a deterministic backtest engine with golden tests, scenario branches, versioned export/import with a checksum, beginner help (glossary, tour, run summary, buy-and-hold comparison), an MCP server inside the product (local only) so a user's own AI can drive the simulator, and **566 automated tests** (unit + browser end-to-end).
+- **Market work by a marketing bot:** research of 7+ competitors with sources checked by a second source, niche found (no one teaches strategies step by step for beginners), pricing strategy draft, legal checklist (disclaimers, GDPR, AI boundaries), low-budget waitlist channel plan. Rule: no invented numbers.
+- **Not claimed:** no users, traffic or revenue yet.
 
 ## Tools I use and why
 
